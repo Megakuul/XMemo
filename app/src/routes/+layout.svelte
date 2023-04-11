@@ -11,7 +11,7 @@
 	</main>
 
 	<footer>
-		<p>Found an issue on this site? Fix it on <a href="https://github.com/Megakuul/xmemo">Github</a></p>
+		<p>Found an issue on this site? Fix it on <a href="https://github.com/Megakuul/XMemo">Github</a></p>
 	</footer>
 </div>
 
