@@ -21,7 +21,8 @@
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.0.3",
     "passport": "^0.6.0",
-    "passport-jwt": "^4.0.1"
+    "passport-jwt": "^4.0.1",
+    "socket.io": "^4.6.1"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",

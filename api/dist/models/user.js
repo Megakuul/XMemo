@@ -17,8 +17,13 @@ const mongoose_1 = require("mongoose");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const UserSchema = new mongoose_1.Schema({
     username: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    description: { type: String, required: false },
+    title: { type: String, required: false },
+    ranking: { type: Number, required: false }
 });
+// Check if Password got changed, if yes, hash the password
 UserSchema.pre('save', function (next) {
     return __awaiter(this, void 0, void 0, function* () {
         if (this.isModified('password')) {
@@ -27,6 +32,7 @@ UserSchema.pre('save', function (next) {
         next();
     });
 });
+// Compare Password
 UserSchema.methods.comparePassword = function (password) {
     return bcryptjs_1.default.compare(password, this.password);
 };

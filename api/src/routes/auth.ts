@@ -7,15 +7,43 @@ const express = require("express");
 
 export const AuthRouter: Router = express.Router();
 
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return emailRegex.test(email.toLowerCase());
+}
+
 AuthRouter.post('/register', async (req, res) => {
-  const { username, password } = req.body;
-  const user = new User({ username, password });
+  const { username, email, description, password } = req.body;
+  const basetitle = "Beginner"
+
+  if (!email || !username || !password) {
+    return res.status(404).json({
+      message: "Error registering user",
+      error: "Username, Email and Password is required"
+    });
+  }
+
+  if (!isValidEmail(email)) {
+    return res.status(401).json({
+      message: "Error registering user",
+      error: "Email has invalid format"
+    });
+  }
 
   try {
+    const user = new User({
+      username: username,
+      email: email,
+      password: password,
+      description: description,
+      title: basetitle,
+      ranking: 0 
+    });
+
     await user.save();
-    res.status(201).json({ message: 'User registered successfully' });
+    res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
-    res.status(400).json({ message: 'Error registering user', error: err });
+    res.status(400).json({ message: "Error registering user", error: err });
   }
 });
 
@@ -25,11 +53,11 @@ AuthRouter.post('/login', async (req, res) => {
   try {
     const user = await User.findOne({ username });
     if (!user) {
-      return res.status(401).json({ message: 'User not found' });
+      return res.status(401).json({ message: "User not found" });
     }
 
     if (!await user.comparePassword(password)) {
-      return res.status(401).json({ message: 'Invalid password' });
+      return res.status(401).json({ message: "Invalid password" });
     }
 
     const payload = {
@@ -38,7 +66,7 @@ AuthRouter.post('/login', async (req, res) => {
     };
 
     if (process.env.JWT_SECRET_KEY===undefined) {
-      res.json({
+      return res.json({
         message: "Error logging in",
         error: "Cannot find JWT on the server, contact an administrator"
       });
@@ -56,10 +84,85 @@ AuthRouter.post('/login', async (req, res) => {
     });
   }
 });
+
+AuthRouter.post('/editprofile', 
+  passport.authenticate('jwt', { session: false }), 
+  async (req: any, res: Response) => {
+    const { newusername, newdescription } = req.body;
+    
+    if (!newusername && !newdescription) {
+      return res.status(400).json({
+        message: "At least one field (username or password) is required" 
+      });
+    }
+
+    const user: any = await User.findOne({ _id: req.user._id });
+
+    if (newusername) {
+      user.username = newusername;
+    }
+
+    if (newdescription) {
+      user.description = newdescription;
+    }
+
+    try {
+      await user.save();
+      res.status(200).json({
+        message: "User updated successfully"
+      })
+    } catch (err) {
+      res.status(500).json({ message: 'Error updating user', error: err });
+    }
+  }
+);
+
+AuthRouter.post('/editpassword',
+  passport.authenticate('jwt', { session: false }),
+  async (req: any, res: Response) => {
+    const { oldpassword, newpassword } = req.body;
+
+    if (!newpassword || !oldpassword) {
+      return res.status(400).json({ message: "Error changing password", error: "Old and New Password is required" })
+    }
+
+    if (!await req.user.comparePassword(oldpassword)) {
+      return res.status(401).json({ message: "Error changing password", error: "Invalid password" });
+    }
+
+    try {
+      const user = await User.findOne({ _id: req.user._id });
+
+      if (!user) {
+        return res.status(404).json({
+          message: "Error changing password",
+          error: "User not found"
+        });
+      }
+
+      user.password = newpassword;
+
+      await user.save();
+      res.status(200).json({
+        message: "Password changed successfully"
+      });
+    } catch (err) {
+      res.status(500).json({
+        message: "Error changing password",
+        error: err
+      });
+    }
+  }
+);
       
 AuthRouter.get('/profile',
   passport.authenticate('jwt', { session: false }),
-  (req: any, res: Response) => {
-    res.json({ username: req.user.username });
+  async (req: any, res: Response) => {
+    res.json({
+      username: req.user.username,
+      description: req.user.description,
+      title: req.user.title,
+      ranking: req.user.ranking
+    });
   }
 );
