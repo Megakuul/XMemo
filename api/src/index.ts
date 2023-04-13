@@ -5,7 +5,7 @@ import passport, { PassportStatic } from "passport";
 import { addJWTStrategie } from './config/passport';
 import { connectMongoose } from "./models/db";
 import { AuthRouter } from "./routes/auth";
-import { setupBoardHandler } from "./socket/boardhandler";
+import { setupGameSocket } from "./socket/gameSocket";
 import { PlayRouter } from "./routes/play";
 
 const express = require('express');
@@ -26,15 +26,28 @@ try {
   process.exit(2);
 }
 
+// CORS options
+// TODO: Set the origin to a Env variable
+// If the API shouldn't be public available change the origin
+const corsOptions = {
+  origin: "*",
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+
 // Express RESTful API
 const app: Application = express();
 // Base HTTP Server to use REST API and Socket over the same HTTP Server
 const server = http.createServer(app);
 // Websocket for realtime data
-const io = new Server(server);
+const io = new Server(server, {
+  cors: corsOptions,
+  path: "/gamesock"
+});
 
 // Initialize Express Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(passport.initialize());
@@ -42,7 +55,7 @@ app.use(passport.initialize());
 // Initialize Routes and SocketHandlers
 app.use('/auth', AuthRouter);
 app.use('/play', PlayRouter);
-setupBoardHandler(io);
+setupGameSocket(io);
 
 // Start the HTTP Server
 const PORT = process.env.PORT || 3000;

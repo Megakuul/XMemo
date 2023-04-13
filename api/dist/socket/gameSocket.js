@@ -9,40 +9,37 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setupBoardHandler = void 0;
+exports.setupGameSocket = void 0;
 const game_1 = require("../models/game");
-const setupBoardHandler = (io) => {
+const setupGameSocket = (io) => {
     io.on("connection", (socket) => {
-        console.log("Client connected:", socket.id);
         socket.on("subscribe", (gameId) => __awaiter(void 0, void 0, void 0, function* () {
-            console.log(`Subscribing to game ${gameId}`);
             try {
                 const game = yield game_1.Game.findById(gameId);
                 if (!game) {
-                    throw new Error("Game not found");
+                    socket.emit("subscriptionError", `Failed to connect to game: ${gameId}. Closing socket...`);
+                    socket.disconnect();
                 }
-                const pipeline = [
+                const pipe = [
                     {
                         $match: {
                             "documentKey._id": game._id,
                         },
                     },
                 ];
-                const changeStream = game_1.Game.watch(pipeline);
+                const changeStream = game_1.Game.watch(pipe);
                 changeStream.on("change", (change) => {
-                    console.log("Change detected:", change);
                     socket.emit("gameUpdate", change);
                 });
                 socket.on("disconnect", () => {
-                    console.log("Client disconnected:", socket.id);
                     changeStream.close();
                 });
             }
             catch (err) {
-                console.error("Error subscribing to game:", err);
-                socket.emit("subscriptionError", err.message);
+                socket.emit("subscriptionError", `Failed to connect to game: ${gameId} with error: ${err.message}.\nClosing socket`);
+                socket.disconnect();
             }
         }));
     });
 };
-exports.setupBoardHandler = setupBoardHandler;
+exports.setupGameSocket = setupGameSocket;

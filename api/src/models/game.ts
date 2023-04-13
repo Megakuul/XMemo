@@ -1,32 +1,35 @@
 import { Schema, Document, model } from 'mongoose';
 
 interface ICard {
+  tag: string;
   discovered: boolean;
   captured: boolean;
   owner_id: string;
-
-  symbol_path: string;
+  partner_tag: string;
 }
 
 interface IGame extends Document {
   p1_id: string;
   p2_id: string;
+  p1_username: string;
+  p2_username: string;
 
   cards: ICard[];
 }
 
 const CardSchema: Schema = new Schema<ICard>({
+  tag: { type: String, required: true },
   discovered: { type: Boolean, required: true },
   captured: { type: Boolean, required: true },
   owner_id: { type: String, required: false },
-
-  symbol_path: { type: String, required: true }
+  partner_tag: { type: String, required: true }
 })
 
 const GameSchema: Schema = new Schema<IGame>({
   p1_id: { type: String, required: true },
   p2_id: { type: String, required: true },
-
+  p1_username: { type: String, required: true },
+  p2_username: { type: String, required: true },
   cards: { type: [CardSchema], required: true }
 })
 

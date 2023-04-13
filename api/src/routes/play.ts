@@ -1,9 +1,10 @@
 import {Router, Request, Response} from "express";
 import jwt from 'jsonwebtoken';
+import passport from "passport";
 import { User } from "../models/user";
 import { Game } from "../models/game";
 import { GameQueue } from "../models/queue";
-import passport from "passport";
+import { createGame } from "../game/gamehandler";
 
 const express = require("express");
 
@@ -13,15 +14,24 @@ PlayRouter.post('/queue',
   passport.authenticate('jwt', { session: false }),
   async (req: any, res: Response) => {
     try {
+      // Check if player was already in the queue -> remove the player from the queue
+      if (await GameQueue.findOneAndDelete({ user_id: req.user._id })) {
+        return res.status(200).json({
+          message: "Successfully removed player from the queue"
+        });
+      }
+
+      // Add player to the queue
       await new GameQueue({
         user_id: req.user._id, username: req.user.username 
       }).save();
 
-      // TODO: Check if the player is already in the queue
+      // Check if a Game can be created
+      // TODO: here could be an algorithmus to find an optimal enemy for the player
       if (await GameQueue.countDocuments() >= 2) {
         const p1: any = await GameQueue.findOneAndDelete();
         const p2: any = await GameQueue.findOneAndDelete();
-        await startGame(p1.user_id, p2.user_id);
+        await createGame(p1.user_id, p2.user_id, p1.username, p2.username, 20);
         // TODO: Maybe redirect user to the board
         return res.status(200).json({
           message: "Successfully created game",
@@ -54,39 +64,3 @@ PlayRouter.get('/queue', async (req, res) => {
     });
   }
 });
-
-const startGame = async (p1_id: string, p2_id: string): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    try {
-      const game = new Game({
-        p1_id: p1_id,
-        p2_id: p2_id,
-        cards: [
-          {
-            discovered: false,
-            captured: false,
-          
-            symbol_path: "Test"
-          },
-          {
-            discovered: false,
-            captured: false,
-          
-            symbol_path: "Test"
-          },
-          {
-            discovered: false,
-            captured: false,
-          
-            symbol_path: "Test"
-          }
-        ]
-      });
-    
-      game.save();
-      resolve();
-    } catch (err) {
-      reject(new Error(`Error creating game: ${err}`));
-    }
-  });
-}

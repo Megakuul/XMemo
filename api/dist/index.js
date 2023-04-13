@@ -9,7 +9,7 @@ const passport_1 = __importDefault(require("passport"));
 const passport_2 = require("./config/passport");
 const db_1 = require("./models/db");
 const auth_1 = require("./routes/auth");
-const boardhandler_1 = require("./socket/boardhandler");
+const gameSocket_1 = require("./socket/gameSocket");
 const play_1 = require("./routes/play");
 const express = require('express');
 const mongoose = require("mongoose");
@@ -26,21 +26,30 @@ catch (err) {
     console.error(err);
     process.exit(2);
 }
+const corsOptions = {
+    origin: "*",
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+};
 // Express RESTful API
 const app = express();
 // Base HTTP Server to use REST API and Socket over the same HTTP Server
 const server = http_1.default.createServer(app);
 // Websocket for realtime data
-const io = new socket_io_1.Server(server);
+const io = new socket_io_1.Server(server, {
+    cors: corsOptions,
+    path: "/gamesock"
+});
 // Initialize Express Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(passport_1.default.initialize());
 // Initialize Routes and SocketHandlers
 app.use('/auth', auth_1.AuthRouter);
 app.use('/play', play_1.PlayRouter);
-(0, boardhandler_1.setupBoardHandler)(io);
+(0, gameSocket_1.setupGameSocket)(io);
 // Start the HTTP Server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
