@@ -17,15 +17,14 @@
         socket.emit("subscribe", gameid);
     });
     // Initial load the Gameboard
-    socket.on("gameLoad", (board) => {
-        // TODO: Build Gameboard
+    socket.on("gameLoad", (game) => {
+        board = game;
         console.log(board);
     });
     // Hydrate changes into the Gameboard
-    socket.on("gameUpdate", (change) => {
-        // TODO: Append changes to Gameboard
-        gamevalue = change;
-        console.log(change);
+    socket.on("gameUpdate", (game) => {
+        board = game;
+        console.log(board);
     });
     // Fetch SubscriptionErrors
     socket.on("subscriptionError", (errorMessage) => {
@@ -38,6 +37,7 @@
         connectionstate = "disconnected";
     });
 
+    let board: any;
     let connectionstate = "disconnected";
     let gamevalue = "No value received";
     let subscriptionerror = "No subscription Error";

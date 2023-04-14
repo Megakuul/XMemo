@@ -26,6 +26,9 @@ catch (err) {
     console.error(err);
     process.exit(2);
 }
+// CORS options
+// TODO: Set the origin to a Env variable
+// If the API shouldn't be public available change the origin
 const corsOptions = {
     origin: "*",
     methods: ["GET", "POST"],

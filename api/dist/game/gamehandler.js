@@ -30,6 +30,7 @@ const createGame = (p1_id, p2_id, p1_username, p2_username, pairs) => __awaiter(
     });
 });
 exports.createGame = createGame;
+// Generate the Cards for the Game
 const generateCards = (pairs) => {
     let tempCardList = [];
     for (let i = 0; i < Number(pairs); i++) {
@@ -41,9 +42,9 @@ const generateCards = (pairs) => {
         });
     }
     shuffle(tempCardList);
-    console.log(tempCardList);
     return tempCardList;
 };
+// Shuffle the Cards
 const shuffle = (array) => {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
