@@ -67,7 +67,6 @@ const formatGameboard = (game: any) => {
   for (let i = 0; i < Number(gameCpy.cards.length); i++) {
     if (!gameCpy.cards[i].discovered && !gameCpy.cards[i].captured) {
       gameCpy.cards[i].tag = undefined;
-      gameCpy.cards[i].partner_tag = undefined;
     }
   }
 

@@ -32,7 +32,7 @@ exports.AuthRouter.post('/register', (req, res) => __awaiter(void 0, void 0, voi
         });
     }
     if (!isValidEmail(email)) {
-        return res.status(401).json({
+        return res.status(400).json({
             message: "Error registering user",
             error: "Email has invalid format"
         });
@@ -50,7 +50,7 @@ exports.AuthRouter.post('/register', (req, res) => __awaiter(void 0, void 0, voi
         res.status(201).json({ message: "User registered successfully" });
     }
     catch (err) {
-        res.status(400).json({ message: "Error registering user", error: err });
+        res.status(500).json({ message: "Error registering user", error: err });
     }
 }));
 exports.AuthRouter.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -58,29 +58,29 @@ exports.AuthRouter.post('/login', (req, res) => __awaiter(void 0, void 0, void 0
     try {
         const user = yield user_1.User.findOne({ username });
         if (!user) {
-            return res.status(401).json({ message: "User not found" });
+            return res.status(404).json({ message: "User not found" });
         }
         if (!(yield user.comparePassword(password))) {
-            return res.status(401).json({ message: "Invalid password" });
+            return res.status(400).json({ message: "Invalid password" });
         }
         const payload = {
             id: user._id,
             username: user.username,
         };
         if (process.env.JWT_SECRET_KEY === undefined) {
-            return res.json({
+            return res.status(500).json({
                 message: "Error logging in",
                 error: "Cannot find JWT on the server, contact an administrator"
             });
         }
         const token = jsonwebtoken_1.default.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: '7d' });
-        res.json({
+        res.status(200).json({
             message: "Logged in successfully",
             token: `Bearer ${token}`
         });
     }
     catch (err) {
-        res.status(400).json({
+        res.status(500).json({
             message: "Error logging in",
             error: err
         });
@@ -116,7 +116,7 @@ exports.AuthRouter.post('/editpassword', passport_1.default.authenticate('jwt', 
         return res.status(400).json({ message: "Error changing password", error: "Old and New Password is required" });
     }
     if (!(yield req.user.comparePassword(oldpassword))) {
-        return res.status(401).json({ message: "Error changing password", error: "Invalid password" });
+        return res.status(400).json({ message: "Error changing password", error: "Invalid password" });
     }
     try {
         const user = yield user_1.User.findOne({ _id: req.user._id });
@@ -140,7 +140,7 @@ exports.AuthRouter.post('/editpassword', passport_1.default.authenticate('jwt', 
     }
 }));
 exports.AuthRouter.get('/profile', passport_1.default.authenticate('jwt', { session: false }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    res.json({
+    res.status(200).json({
         username: req.user.username,
         description: req.user.description,
         title: req.user.title,

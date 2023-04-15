@@ -40,7 +40,6 @@ const setupGameSocket = (io) => {
                     var _a;
                     if (((_a = process.env.PARTIAL_UPDATE_MODE) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === "true") {
                         incrementGameboardChanges(game, change);
-                        console.log("Increment");
                     }
                     else {
                         game = yield game_1.Game.findById(gameId);
@@ -74,7 +73,6 @@ const formatGameboard = (game) => {
     for (let i = 0; i < Number(gameCpy.cards.length); i++) {
         if (!gameCpy.cards[i].discovered && !gameCpy.cards[i].captured) {
             gameCpy.cards[i].tag = undefined;
-            gameCpy.cards[i].partner_tag = undefined;
         }
     }
     return gameCpy;
