@@ -1,29 +1,33 @@
-import {Application, Request, Response} from "express";
+import express, {Application, Request, Response} from "express";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import bodyParser from "body-parser";
+import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
 import passport, { PassportStatic } from "passport";
-import { addJWTStrategie } from './config/passport';
-import { connectMongoose } from "./models/db";
-import { AuthRouter } from "./routes/auth";
-import { setupGameSocket } from "./socket/gameSocket";
-import { PlayRouter } from "./routes/play";
-
-const express = require('express');
-const mongoose = require("mongoose");
-const dotenv = require('dotenv');
-const bodyParser = require('body-parser');
-const cors = require('cors');
+import { addJWTStrategie } from './config/passport.js';
+import { connectMongoose } from "./models/db.js";
+import { AuthRouter } from "./routes/auth.js";
+import { setupGameSocket } from "./socket/gameSocket.js";
+import { PlayRouter } from "./routes/play.js";
 
 dotenv.config();
 
-// Connect the Mongoose Adapter and initializing the JWT Strategie
+// Connect the Mongoose Adapter
 try {
-  connectMongoose(mongoose, process.env.DB_AUTH_STRING)
-
-  addJWTStrategie(passport, process.env.JWT_SECRET_KEY);
-} catch (err) {
-  console.error(err);
+  await connectMongoose(mongoose, process.env.DB_AUTH_STRING);
+} catch (err: any) {
+  console.error(`Error connecting mongodb database: ${err.message}`);
   process.exit(2);
+}
+
+// Initializing the JWT Strategie
+try {
+  await addJWTStrategie(passport, process.env.JWT_SECRET_KEY);
+} catch (err: any) {
+  console.error(`Error Injecting JWTStrategie: ${err.message}`);
+  process.exit(3);
 }
 
 // CORS options

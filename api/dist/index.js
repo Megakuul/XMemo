@@ -1,30 +1,32 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const http_1 = __importDefault(require("http"));
-const socket_io_1 = require("socket.io");
-const passport_1 = __importDefault(require("passport"));
-const passport_2 = require("./config/passport");
-const db_1 = require("./models/db");
-const auth_1 = require("./routes/auth");
-const gameSocket_1 = require("./socket/gameSocket");
-const play_1 = require("./routes/play");
-const express = require('express');
-const mongoose = require("mongoose");
-const dotenv = require('dotenv');
-const bodyParser = require('body-parser');
-const cors = require('cors');
+import express from "express";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import bodyParser from "body-parser";
+import cors from "cors";
+import http from "http";
+import { Server } from "socket.io";
+import passport from "passport";
+import { addJWTStrategie } from './config/passport.js';
+import { connectMongoose } from "./models/db.js";
+import { AuthRouter } from "./routes/auth.js";
+import { setupGameSocket } from "./socket/gameSocket.js";
+import { PlayRouter } from "./routes/play.js";
 dotenv.config();
-// Connect the Mongoose Adapter and initializing the JWT Strategie
+// Connect the Mongoose Adapter
 try {
-    (0, db_1.connectMongoose)(mongoose, process.env.DB_AUTH_STRING);
-    (0, passport_2.addJWTStrategie)(passport_1.default, process.env.JWT_SECRET_KEY);
+    await connectMongoose(mongoose, process.env.DB_AUTH_STRING);
 }
 catch (err) {
-    console.error(err);
+    console.error(`Error connecting mongodb database: ${err.message}`);
     process.exit(2);
+}
+// Initializing the JWT Strategie
+try {
+    await addJWTStrategie(passport, process.env.JWT_SECRET_KEY);
+}
+catch (err) {
+    console.error(`Error Injecting JWTStrategie: ${err.message}`);
+    process.exit(3);
 }
 // CORS options
 // TODO: Set the origin to a Env variable
@@ -38,9 +40,9 @@ const corsOptions = {
 // Express RESTful API
 const app = express();
 // Base HTTP Server to use REST API and Socket over the same HTTP Server
-const server = http_1.default.createServer(app);
+const server = http.createServer(app);
 // Websocket for realtime data
-const io = new socket_io_1.Server(server, {
+const io = new Server(server, {
     cors: corsOptions,
     path: "/gamesock"
 });
@@ -48,11 +50,11 @@ const io = new socket_io_1.Server(server, {
 app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(passport_1.default.initialize());
+app.use(passport.initialize());
 // Initialize Routes and SocketHandlers
-app.use('/auth', auth_1.AuthRouter);
-app.use('/play', play_1.PlayRouter);
-(0, gameSocket_1.setupGameSocket)(io);
+app.use('/auth', AuthRouter);
+app.use('/play', PlayRouter);
+setupGameSocket(io);
 // Start the HTTP Server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {

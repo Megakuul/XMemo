@@ -1,12 +1,10 @@
-import {Router, Request, Response} from "express";
+import express, {Router, Request, Response} from "express";
 import jwt from 'jsonwebtoken';
 import passport from "passport";
-import { User } from "../models/user";
-import { Game } from "../models/game";
-import { GameQueue } from "../models/queue";
-import { createGame, move } from "../game/gameHandler";
-
-const express = require("express");
+import { User } from "../models/user.js";
+import { Game } from "../models/game.js";
+import { GameQueue } from "../models/queue.js";
+import { createGame, move } from "../game/gamehandler.js";
 
 export const PlayRouter: Router = express.Router();
 
@@ -70,46 +68,49 @@ PlayRouter.post('/move',
   passport.authenticate('jwt', { session: false }),
   async (req: any, res: Response) => {
 
-    const gameid = req.query.gameid;
-    const discover_id = req.body.discover_id;
-
-    const game = await Game.findById(gameid);
-
-    if (!game) {
-      return res.status(404).json({
-        message: "Error on move",
-        error: `Game with id: ${gameid} not found`
-      });
-    }
-
-    if (game.active_id !== req.user._id) {
-      return res.status(403).json({
-        message: "Error on move",
-        error: `You are not allowed to move now`
-      });
-    } 
-
-    // This will lock the active_id to prevent a spamming attack
-    // The active_id will be re-set in the move() function below
-    if (!await Game.findOneAndUpdate(
-      { _id: gameid },
-      { $set: { active_id: undefined }, }
-    )) {
-      return res.status(500).json({
-        message: "Error on move",
-        error: "Failed to update the game"
-      });
-    }
-    
-    // This will handle the main logic of the programm
     try {
+      const gameid = req.query.gameid;
+      const discover_id = req.body.discover_id;
+
+      const game = await Game.findById(gameid);
+
+      if (!game) {
+        return res.status(404).json({
+          message: "Error on move",
+          error: `Game with id: ${gameid} not found`
+        });
+      }
+      if (game.active_id !== req.user._id.toString()) {
+        return res.status(403).json({
+          message: "Error on move",
+          error: `You are not allowed to move now`
+        });
+      } 
+
+      // This will lock the active_id to prevent a spamming attack
+      // The active_id will be re-set in the move() function below
+      if (!await Game.findOneAndUpdate(
+        { _id: gameid },
+        { $set: { active_id: undefined }, }
+      )) {
+        return res.status(500).json({
+          message: "Error on move",
+          error: "Failed to update the game"
+        });
+      }
+      
+      // This will handle the main logic of the programm
       const enemy_id = game.active_id===game.p1_id ? game.p2_id : game.p1_id;
       await move(game, enemy_id, discover_id);
-    } catch (err) {
+
+      return res.status(200).json({
+        message: "Successfully moved"
+      });
+    } catch (err: any) {
       return res.status(400).json({
         message: "Error on move",
-        error: err
+        error: err.message
       });
     }
-  } 
+  }
 );

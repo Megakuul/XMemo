@@ -1,28 +1,13 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.AuthRouter = void 0;
-const passport_1 = __importDefault(require("passport"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const user_1 = require("../models/user");
-const express = require("express");
-exports.AuthRouter = express.Router();
+import express from "express";
+import passport from "passport";
+import jwt from 'jsonwebtoken';
+import { User } from "../models/user.js";
+export const AuthRouter = express.Router();
 const isValidEmail = (email) => {
     const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return emailRegex.test(email.toLowerCase());
 };
-exports.AuthRouter.post('/register', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+AuthRouter.post('/register', async (req, res) => {
     const { username, email, description, password } = req.body;
     const basetitle = "Beginner";
     if (!email || !username || !password) {
@@ -38,7 +23,7 @@ exports.AuthRouter.post('/register', (req, res) => __awaiter(void 0, void 0, voi
         });
     }
     try {
-        const user = new user_1.User({
+        const user = new User({
             username: username,
             email: email,
             password: password,
@@ -46,21 +31,21 @@ exports.AuthRouter.post('/register', (req, res) => __awaiter(void 0, void 0, voi
             title: basetitle,
             ranking: 0
         });
-        yield user.save();
+        await user.save();
         res.status(201).json({ message: "User registered successfully" });
     }
     catch (err) {
         res.status(500).json({ message: "Error registering user", error: err });
     }
-}));
-exports.AuthRouter.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+AuthRouter.post('/login', async (req, res) => {
     const { username, password } = req.body;
     try {
-        const user = yield user_1.User.findOne({ username });
+        const user = await User.findOne({ username });
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-        if (!(yield user.comparePassword(password))) {
+        if (!await user.comparePassword(password)) {
             return res.status(400).json({ message: "Invalid password" });
         }
         const payload = {
@@ -73,7 +58,7 @@ exports.AuthRouter.post('/login', (req, res) => __awaiter(void 0, void 0, void 0
                 error: "Cannot find JWT on the server, contact an administrator"
             });
         }
-        const token = jsonwebtoken_1.default.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: '7d' });
+        const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: '7d' });
         res.status(200).json({
             message: "Logged in successfully",
             token: `Bearer ${token}`
@@ -85,15 +70,15 @@ exports.AuthRouter.post('/login', (req, res) => __awaiter(void 0, void 0, void 0
             error: err
         });
     }
-}));
-exports.AuthRouter.post('/editprofile', passport_1.default.authenticate('jwt', { session: false }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+AuthRouter.post('/editprofile', passport.authenticate('jwt', { session: false }), async (req, res) => {
     const { newusername, newdescription } = req.body;
     if (!newusername && !newdescription) {
         return res.status(400).json({
             message: "At least one field (username or password) is required"
         });
     }
-    const user = yield user_1.User.findOne({ _id: req.user._id });
+    const user = await User.findOne({ _id: req.user._id });
     if (newusername) {
         user.username = newusername;
     }
@@ -101,7 +86,7 @@ exports.AuthRouter.post('/editprofile', passport_1.default.authenticate('jwt', {
         user.description = newdescription;
     }
     try {
-        yield user.save();
+        await user.save();
         res.status(200).json({
             message: "User updated successfully"
         });
@@ -109,17 +94,17 @@ exports.AuthRouter.post('/editprofile', passport_1.default.authenticate('jwt', {
     catch (err) {
         res.status(500).json({ message: 'Error updating user', error: err });
     }
-}));
-exports.AuthRouter.post('/editpassword', passport_1.default.authenticate('jwt', { session: false }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+AuthRouter.post('/editpassword', passport.authenticate('jwt', { session: false }), async (req, res) => {
     const { oldpassword, newpassword } = req.body;
     if (!newpassword || !oldpassword) {
         return res.status(400).json({ message: "Error changing password", error: "Old and New Password is required" });
     }
-    if (!(yield req.user.comparePassword(oldpassword))) {
+    if (!await req.user.comparePassword(oldpassword)) {
         return res.status(400).json({ message: "Error changing password", error: "Invalid password" });
     }
     try {
-        const user = yield user_1.User.findOne({ _id: req.user._id });
+        const user = await User.findOne({ _id: req.user._id });
         if (!user) {
             return res.status(404).json({
                 message: "Error changing password",
@@ -127,7 +112,7 @@ exports.AuthRouter.post('/editpassword', passport_1.default.authenticate('jwt', 
             });
         }
         user.password = newpassword;
-        yield user.save();
+        await user.save();
         res.status(200).json({
             message: "Password changed successfully"
         });
@@ -138,12 +123,12 @@ exports.AuthRouter.post('/editpassword', passport_1.default.authenticate('jwt', 
             error: err
         });
     }
-}));
-exports.AuthRouter.get('/profile', passport_1.default.authenticate('jwt', { session: false }), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+AuthRouter.get('/profile', passport.authenticate('jwt', { session: false }), async (req, res) => {
     res.status(200).json({
         username: req.user.username,
         description: req.user.description,
         title: req.user.title,
         ranking: req.user.ranking
     });
-}));
+});

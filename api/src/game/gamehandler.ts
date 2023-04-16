@@ -1,6 +1,6 @@
-import { Game, ICard, IGame } from "../models/game";
-import { GameQueue } from "../models/queue";
-import { User } from "../models/user";
+import { Game, ICard, IGame } from "../models/game.js";
+import { GameQueue } from "../models/queue.js";
+import { User } from "../models/user.js";
 
 /**
  * Creates a Game

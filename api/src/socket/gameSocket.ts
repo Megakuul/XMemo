@@ -1,5 +1,5 @@
 import { Server, Socket } from "socket.io";
-import { Game } from "../models/game";
+import { Game } from "../models/game.js";
 
 export const setupGameSocket = (io: Server) => {
   io.on("connection", (socket: Socket) => {

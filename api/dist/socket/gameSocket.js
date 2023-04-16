@@ -1,22 +1,10 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.setupGameSocket = void 0;
-const game_1 = require("../models/game");
-const setupGameSocket = (io) => {
+import { Game } from "../models/game.js";
+export const setupGameSocket = (io) => {
     io.on("connection", (socket) => {
         // If the client emits subscribe, this will subscribe to live changes from the selected Game
-        socket.on("subscribe", (gameId) => __awaiter(void 0, void 0, void 0, function* () {
+        socket.on("subscribe", async (gameId) => {
             try {
-                let game = yield game_1.Game.findById(gameId);
+                let game = await Game.findById(gameId);
                 if (!game) {
                     // Close the Socket if the game does not exist
                     socket.emit("subscriptionError", `Failed to connect to game: ${gameId}. Closing socket...`);
@@ -34,18 +22,17 @@ const setupGameSocket = (io) => {
                     },
                 ];
                 // Retrieve live datastream from the database
-                const changeStream = game_1.Game.watch(pipe);
+                const changeStream = Game.watch(pipe);
                 // Fire a gameupdate when the data changes
-                changeStream.on("change", (change) => __awaiter(void 0, void 0, void 0, function* () {
-                    var _a;
-                    if (((_a = process.env.PARTIAL_UPDATE_MODE) === null || _a === void 0 ? void 0 : _a.toLowerCase()) === "true") {
+                changeStream.on("change", async (change) => {
+                    if (process.env.PARTIAL_UPDATE_MODE?.toLowerCase() === "true") {
                         incrementGameboardChanges(game, change);
                     }
                     else {
-                        game = yield game_1.Game.findById(gameId);
+                        game = await Game.findById(gameId);
                     }
                     socket.emit("gameUpdate", formatGameboard(game));
-                }));
+                });
                 // Close live datastream on disconnect
                 socket.on("disconnect", () => {
                     changeStream.close();
@@ -56,10 +43,9 @@ const setupGameSocket = (io) => {
                 socket.emit("subscriptionError", `Failed to connect to game: ${gameId} with error: ${err.message}.\nClosing socket`);
                 socket.disconnect();
             }
-        }));
+        });
     });
 };
-exports.setupGameSocket = setupGameSocket;
 /**
  * Formats the Gameboard for the client side
  * This will hide the link tags of the cards until they are discovered or captured

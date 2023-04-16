@@ -1,9 +1,7 @@
-import {Router, Request, Response} from "express";
+import express, {Router, Request, Response} from "express";
 import passport from "passport";
 import jwt from 'jsonwebtoken';
-import { User } from "../models/user";
-
-const express = require("express");
+import { User } from "../models/user.js";
 
 export const AuthRouter: Router = express.Router();
 
