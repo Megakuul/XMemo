@@ -1,3 +1,2 @@
-// since there's no dynamic data here, we can prerender
-// it so that it gets served as a static asset in production
+// Mainpage is not dynamic so we will prerender it
 export const prerender = true;

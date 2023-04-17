@@ -13,6 +13,7 @@ body {
 	min-height: 100vh;
 	margin: 0;
 	background-image: var(--main-gradient);
+	color: white;
 }
 
 h1,
@@ -38,4 +39,22 @@ h1 {
 
 h2 {
 	font-size: 1rem;
+}
+
+.err-title {
+	width: 100%;
+	font-size: 4rem;
+	text-align: center;
+}
+
+.err-msg {
+	width: 100%;
+	font-size: 2rem;
+	text-align: center;
+}
+
+.loading-msg {
+	width: 100%;
+	font-size: 5rem;
+	text-align: center;
 }
