@@ -1,12 +1,14 @@
 ﻿# XMEMO - Memory Game Plattform
 
-[]!(/app/static/favicon.svg)
+![XMEMO Favicon](/app/static/favicon.svg "XMemo Icon")
 
 🔥 XMEMO is a full stack Application built with SvelteKit, Express and Mongodb 🔥
 
 🏆 Play memory games against other players and compete in the leaderboard.🏆
 
 ⚠️ The Platform is not finished and not working today ⚠️
+
+
 
 
 
@@ -289,72 +291,116 @@ Response Example (JSON):
 
 ### Websocket:
 
-The Socket is organized in multiple sub-routes that can be subscribed to:
+The Socket is organized in multiple sub-routes that can be subscribed to.
 
+To unsubscribe to the events, just send the exact same command but with the prefix `un-`
 
-
-**subscribeGame**
+**subscribeGame (un-)**
 
 ---
 
 Parameter: &lt;Gameid&gt;
 
-Responses:
+Response Streams:
 
-```javascript
-
-
-```
-
-
-
-**subscribeQueue**
-
----
-
-Parameter: -
-
-Responses:
-
-```javascript
-[
-      {
-          "_id": "<queueitemid>",
-          "user_id": "<userid>",
-          "username": "Trudi",
-          "__v": 0
-      }
-]
-
-```
+| gameUpdate | Gameboard (JSON) |
+| --- | --- |
+| gameUpdateError | Error message (Text) |
 
 
 
-**subscribeLeaderboard**
+**subscribeQueue (un-)**
 
 ---
 
 Parameter: -
 
-Responses:
+Response Streams:
+
+| queueUpdate | Queue (Array&lt;GameQueueObject&gt;) |
+| --- | --- |
+| queueUpdateError | Error message (String) |
+
+
+
+**subscribeLeaderboard (un-)**
+
+---
+
+Parameter: -
+
+Response Streams:
+
+| leaderboardUpdate | Leaderboard (Array&lt;UserObject&gt;) |
+| --- | --- |
+| leaderboardUpdateError | Error message (String) |
+
+
+
+**Example (Svelte)**
+
+---
+
+Connect Socket:
 
 ```javascript
+import { io, type Socket } from "socket.io-client";
 
+export let socket: Socket;
+
+export const onConnected = (callback: any) => {
+  if (!socket) {
+    socket = io("http://localhost:3000", { path: "/gamesock" });
+  }
+  if (socket.connected) {
+    callback();
+  } else {
+    socket.on("connect", callback);
+  }
+}
 
 ```
 
-
-
-
-
-Example:
+Subscribe to topics:
 
 ```javascript
+<script lang="ts">
+    import { page } from "$app/stores";
+    import { socket, onConnected } from "$lib/socket/socket";
 
+    // Read Gameid from URL Parameter
+    const gameid = $page.url.searchParams.get('gameid');
+
+    onConnected(() => {
+        socket.emit("subscribeGame", gameid);
+
+        socket.on("gameUpdate", (game) => {
+            board = game;
+        });
+        socket.on("gameUpdateError", (error, exacterror) => {
+            errormsg = error;
+        })
+    });
+
+
+    let errormsg: any = null;
+    let board: any;
+</script>
+
+<div class="main-board">
+    {#if board && board.cards}
+        {#each board.cards as card}
+            <h1>{card.discovered}</h1>
+        {/each}
+    {:else if errormsg!=null}
+        <h1 class="err-title">Error 404</h1>
+        <p class="err-msg">{errormsg}</p>
+    {:else}
+        <p class="loading-msg">Loading...</p>
+    {/if}
+</div>
 
 ```
-
-
 
 
 
