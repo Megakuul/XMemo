@@ -1,17 +1,15 @@
 ﻿# XMEMO - Memory Game Plattform
 
 ![XMEMO Favicon](/app/static/favicon.svg "XMemo Icon")
-
+  
+  
 🔥 XMEMO is a full stack Application built with SvelteKit, Express and Mongodb 🔥
 
 🏆 Play memory games against other players and compete in the leaderboard.🏆
 
 ⚠️ The Platform is not finished and not working today ⚠️
-
-
-
-
-
+  
+  
 ## API Documentation
 
 ---
