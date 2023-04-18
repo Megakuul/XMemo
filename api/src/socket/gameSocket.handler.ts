@@ -1,53 +1,39 @@
-import { Server, Socket } from "socket.io";
+import { Socket } from "socket.io";
 import { Game, IGame } from "../models/game.js";
 import { GameQueue } from "../models/queue.js";
 import { User } from "../models/user.js";
 
-// TODO: Document function
-export const setupQueueTrigger = async (callback: Function) => {
-  const loadQueue = async () => {
-    const queue = await GameQueue.find({});
+/**
+ * Listens for changes to a database model and sends a callback when changes occur.
+ * The callback is also executed immediately when the function is executed
+ * 
+ * Example:
+ * ```javascript
+ *  await useDatabaseTrigger(User, async () => {
+ *   try {
+ *     const leaderboard = await User.find({},
+ *       'username ranking')
+ *       .sort({ ranking: -1 });
+ *
+ *     socket.emit("leaderboardUpdate", leaderboard)
+ *   } catch (err: any) {
+ *     socket.emit("leaderboardUpdateError", err.message);
+ *  }
+ * });
+ * ```
+ * 
+ * @param Model Model to listen to
+ * @param callback Function that will be executed if the databasemodel changes
+ */
+export const useDatabaseTrigger = async (Model: any, callback: Function) => {
+  await callback();
 
-    callback(queue, null);
-  }
+  const databaseStream = await Model.watch();
 
-  try {
-    loadQueue();
-
-    const queueStream = await GameQueue.watch();
-  
-    queueStream.on("change", async () => {
-      await loadQueue();
-    });
-  } catch (err: any) {
-    callback(undefined, err);
-  }
+  databaseStream.on("change", async () => {
+    await callback();
+  });
 }
-
-// TODO: Document function
-export const setupLeaderboardTrigger = async (callback: Function) => {
-  const loadLeaderboard = async () => {
-    const leaderboard = await User.find({},
-      'username ranking')
-      .sort({ ranking: -1 });
-
-    callback(leaderboard, null);
-  }
-
-  try {
-    await loadLeaderboard();
-
-    const userStream = await User.watch();
-
-    userStream.on("change", async () => {
-      await loadLeaderboard();
-    });
-
-  } catch (err: any) {
-    callback(undefined, err);
-  }
-}
-
 
 /**
  * Sends Board/Game Updates to the provided Socket

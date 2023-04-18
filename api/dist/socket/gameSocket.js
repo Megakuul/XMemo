@@ -1,26 +1,29 @@
-import { handleGameUpdate, setupQueueTrigger, setupLeaderboardTrigger } from "../game/sockethandler.js";
-// TODO: Make the code cleaner and more readable
+import { GameQueue } from "../models/queue.js";
+import { User } from "../models/user.js";
+import { handleGameUpdate, useDatabaseTrigger } from "./gameSocket.handler.js";
+import { emitSeveral, removeDisconnectedSockets, removeFromList } from "./gameSocket.helper.js";
 export const setupGameSocket = async (io) => {
     let Queue;
     let LeaderBoard;
     const queueSubscribers = [];
     const leaderboardSubscribers = [];
-    setupQueueTrigger((queue, error) => {
-        if (!error) {
-            Queue = queue;
-            emitToSubscribers(queueSubscribers, "queueUpdate", queue);
+    await useDatabaseTrigger(GameQueue, async () => {
+        try {
+            Queue = await GameQueue.find({});
+            emitSeveral(queueSubscribers, "queueUpdate", Queue);
         }
-        else {
-            emitToSubscribers(queueSubscribers, "queueUpdateError", error);
+        catch (err) {
+            emitSeveral(queueSubscribers, "queueUpdateError", err.message);
         }
     });
-    setupLeaderboardTrigger((leaderboard, error) => {
-        if (!error) {
-            LeaderBoard = leaderboard;
-            emitToSubscribers(leaderboardSubscribers, "leaderboardUpdate", leaderboard);
+    await useDatabaseTrigger(User, async () => {
+        try {
+            LeaderBoard = await User.find({}, 'username ranking')
+                .sort({ ranking: -1 });
+            emitSeveral(leaderboardSubscribers, "leaderboardUpdate", LeaderBoard);
         }
-        else {
-            emitToSubscribers(leaderboardSubscribers, "leaderboardUpdateError", error);
+        catch (err) {
+            emitSeveral(leaderboardSubscribers, "leaderboardUpdateError", err.message);
         }
     });
     io.on("connection", (socket) => {
@@ -29,7 +32,7 @@ export const setupGameSocket = async (io) => {
         });
         socket.on("subscribeQueue", async () => {
             socket.emit("queueUpdate", Queue);
-            if (!isSocketInList(socket, queueSubscribers)) {
+            if (!queueSubscribers.includes(socket)) {
                 queueSubscribers.push(socket);
             }
         });
@@ -38,7 +41,7 @@ export const setupGameSocket = async (io) => {
         });
         socket.on("subscribeLeaderboard", async () => {
             socket.emit("leaderboardUpdate", LeaderBoard);
-            if (!isSocketInList(socket, leaderboardSubscribers)) {
+            if (!leaderboardSubscribers.includes(socket)) {
                 leaderboardSubscribers.push(socket);
             }
         });
@@ -50,29 +53,4 @@ export const setupGameSocket = async (io) => {
         queueSubscribers,
         leaderboardSubscribers
     ], 1000 * 60);
-};
-const emitToSubscribers = async (subscriberList, stream, content) => {
-    subscriberList.forEach((socket) => {
-        socket.emit(stream, content);
-    });
-};
-const isSocketInList = (socket, list) => {
-    return list.includes(socket);
-};
-const removeFromList = (socket, list) => {
-    const index = list.indexOf(socket);
-    if (index !== -1) {
-        list.splice(index, 1);
-    }
-};
-const removeDisconnectedSockets = (list, intervall) => {
-    setInterval(() => {
-        list.forEach((socketlist) => {
-            socketlist.forEach((socket, index) => {
-                if (socket.disconnected) {
-                    socketlist.splice(index, 1);
-                }
-            });
-        });
-    }, intervall);
 };
