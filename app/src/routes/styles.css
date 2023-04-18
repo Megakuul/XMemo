@@ -58,3 +58,15 @@ h2 {
 	font-size: 5rem;
 	text-align: center;
 }
+
+.title {
+	text-align: center;
+	width: 100%;
+	font-size: 70px;
+}
+
+@media screen and (max-width: 1000px) {
+	.title {
+		font-size: 40px;
+	}
+}

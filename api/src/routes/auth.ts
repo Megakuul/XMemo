@@ -15,7 +15,7 @@ AuthRouter.post('/register', async (req, res) => {
   const basetitle = "Beginner"
 
   if (!email || !username || !password) {
-    return res.status(404).json({
+    return res.status(400).json({
       message: "Error registering user",
       error: "Username, Email and Password is required"
     });
@@ -51,11 +51,11 @@ AuthRouter.post('/login', async (req, res) => {
   try {
     const user = await User.findOne({ username });
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "Error logging in", error: "User not found" });
     }
 
     if (!await user.comparePassword(password)) {
-      return res.status(400).json({ message: "Invalid password" });
+      return res.status(400).json({ message: "Error logging in", error: "Invalid password" });
     }
 
     const payload = {
@@ -90,7 +90,8 @@ AuthRouter.post('/editprofile',
     
     if (!newusername && !newdescription) {
       return res.status(400).json({
-        message: "At least one field (username or password) is required" 
+        message: "Error updating user",
+        error: "At least one field (username or password) is required" 
       });
     }
 
@@ -158,6 +159,7 @@ AuthRouter.get('/profile',
   async (req: any, res: Response) => {
     res.status(200).json({
       username: req.user.username,
+      email: req.user.email,
       description: req.user.description,
       title: req.user.title,
       ranking: req.user.ranking

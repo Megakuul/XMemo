@@ -26,7 +26,8 @@ export const setupGameSocket = async (io: Server) => {
     try {
       LeaderBoard = await User.find({},
         'username ranking')
-        .sort({ ranking: -1 });
+        .sort({ ranking: -1 })
+        .limit(200);
 
       emitSeveral(leaderboardSubscribers, "leaderboardUpdate", LeaderBoard);
     } catch (err: any) {

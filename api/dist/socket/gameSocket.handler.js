@@ -1,50 +1,32 @@
 import { Game } from "../models/game.js";
-import { GameQueue } from "../models/queue.js";
-import { User } from "../models/user.js";
+/**
+ * Listens for changes to a database model and sends a callback when changes occur.
+ * The callback is also executed immediately when the function is executed
+ *
+ * Example:
+ * ```javascript
+ *  await useDatabaseTrigger(User, async () => {
+ *   try {
+ *     const leaderboard = await User.find({},
+ *       'username ranking')
+ *       .sort({ ranking: -1 });
+ *
+ *     socket.emit("leaderboardUpdate", leaderboard)
+ *   } catch (err: any) {
+ *     socket.emit("leaderboardUpdateError", err.message);
+ *  }
+ * });
+ * ```
+ *
+ * @param Model Model to listen to
+ * @param callback Function that will be executed if the databasemodel changes
+ */
 export const useDatabaseTrigger = async (Model, callback) => {
     await callback();
     const databaseStream = await Model.watch();
     databaseStream.on("change", async () => {
         await callback();
     });
-};
-/**
- * Setup a database trigger for the GameQueue
- * @param callback
- */
-export const setupQueueTrigger = async (callback) => {
-    const loadQueue = async () => {
-        const queue = await GameQueue.find({});
-        callback(queue, null);
-    };
-    try {
-        loadQueue();
-        const queueStream = await GameQueue.watch();
-        queueStream.on("change", async () => {
-            await loadQueue();
-        });
-    }
-    catch (err) {
-        callback(undefined, err);
-    }
-};
-// TODO: Document function
-export const setupLeaderboardTrigger = async (callback) => {
-    const loadLeaderboard = async () => {
-        const leaderboard = await User.find({}, 'username ranking')
-            .sort({ ranking: -1 });
-        callback(leaderboard, null);
-    };
-    try {
-        await loadLeaderboard();
-        const userStream = await User.watch();
-        userStream.on("change", async () => {
-            await loadLeaderboard();
-        });
-    }
-    catch (err) {
-        callback(undefined, err);
-    }
 };
 /**
  * Sends Board/Game Updates to the provided Socket
