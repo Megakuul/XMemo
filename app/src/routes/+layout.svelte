@@ -1,9 +1,12 @@
 <script lang="ts">
+    import Snackbar from '$lib/components/snackbar.svelte';
 	import Navbar from './Navbar.svelte';
 	import './styles.css';
 </script>
 
 <div class="app">
+	<Snackbar />
+
 	<Navbar />
 
 	<main>

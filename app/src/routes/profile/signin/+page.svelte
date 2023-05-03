@@ -37,6 +37,6 @@
     Click
   </button>
 {:else}
-  <h1 class="err-title">{error}</h1>
+  <h1 class="err-title">Try Again</h1>
   <button on:click={resetForm}>Try again</button>
 {/if}

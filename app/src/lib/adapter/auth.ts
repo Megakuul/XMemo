@@ -81,11 +81,52 @@ export const Register = async (username: string, email: string, password: string
     })
   });
 
-  const body = await resp.json();
+  if (resp.ok) {
+    return;
+  } else {
+    const body = await resp.json();
+    throw new Error(body.error);
+  }
+}
+
+export const ChangeUser = async (token: string | null, newusername: string, newdescription: string): Promise<void> => {
+  const resp = await fetch(`${import.meta.env.VITE_API_URL}/auth/editprofile`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `${token}`
+    },
+    body: JSON.stringify({
+      newusername: newusername,
+      newdescription: newdescription
+    })
+  })
 
   if (resp.ok) {
     return;
   } else {
+    const body = await resp.json();
+    throw new Error(body.error);
+  }
+}
+
+export const ChangePassword = async (token: string | null, oldpassword: string, newpassword: string): Promise<void> => {
+  const resp = await fetch(`${import.meta.env.VITE_API_URL}/auth/editpassword`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `${token}`
+    },
+    body: JSON.stringify({
+      oldpassword: oldpassword,
+      newpassword: newpassword
+    })
+  })
+
+  if (resp.ok) {
+    return;
+  } else {
+    const body = await resp.json();
     throw new Error(body.error);
   }
 }
