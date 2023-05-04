@@ -19,16 +19,16 @@
       if (Profile) {
         await ChangeUser(getCookie("auth"), Profile!.username, Profile.description || "");
 
-        SnackBar.visible = true;
-        SnackBar.message = "Saved changes to userprofile";
-        SnackBar.color = "green";
+        $SnackBar.visible = true;
+        $SnackBar.message = "Saved changes to userprofile";
+        $SnackBar.color = "green";
       } else {
         throw new Error("Profile not loaded");
       }
     } catch (err: any) {
-      SnackBar.visible = true;
-      SnackBar.message = err.message;
-      SnackBar.color = "red"
+      $SnackBar.visible = true;
+      $SnackBar.message = err.message;
+      $SnackBar.color = "red"
     } 
   }
 </script>

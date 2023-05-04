@@ -10,25 +10,30 @@
   async function editpassword() {
     try {
       if (newpassword !== newpassword_confirm) {
-        throw new Error("Passwords do not match")
+        throw new Error("Passwords do not match");
+      } else if (newpassword === password) {
+        throw new Error("New Password matches the old");
+      } else if (newpassword.length < 8) {
+        throw new Error("New Password needs to contain more than 7 Characters");
       } else {
         await ChangePassword(getCookie("auth"), password, newpassword);
-        window.location.href = "/profile"
 
-        SnackBar.visible = true;
-        SnackBar.message = "Successfully changed Password";
-        SnackBar.color = "green"
+        $SnackBar.visible = true;
+        $SnackBar.message = "Successfully changed Password";
+        $SnackBar.color = "green"
       }
     } catch (err: any) {
-      SnackBar.visible = true;
-      SnackBar.message = err.message;
-      SnackBar.color = "red"
+      $SnackBar.visible = true;
+      $SnackBar.message = err.message;
+      $SnackBar.color = "red"
     }
+    resetForm();
   }
 
   function resetForm() {
     newpassword = "";
     password = "";
+    newpassword_confirm = "";
   }
 </script>
 
@@ -36,8 +41,8 @@
   <h1>Change Password</h1>
 
   <input bind:value={password} type="password" placeholder="Old Password">
-  <input bind:value={newpassword} type="password" placeholder="New Password">
-  <input bind:value={newpassword_confirm} on:submit={editpassword} type="password" placeholder="Confirm New Password">
+  <input bind:value={newpassword} type="password" placeholder="New Password" minlength="8">
+  <input bind:value={newpassword_confirm} on:submit={editpassword} type="password" placeholder="Confirm New Password" minlength="8">
   
   <div style="display: flex; flex-direction: row;">
     <button on:click={() => window.location.href = '/profile'}>Cancel</button>
