@@ -9,7 +9,8 @@ import passport from "passport";
 import { addJWTStrategie } from './config/passport.js';
 import { connectMongoose } from "./models/db.js";
 import { AuthRouter } from "./routes/auth.js";
-import { setupGameSocket } from "./socket/gameSocket.js";
+import { setupPublicSocket } from "./socket/PublicSocket.js";
+import { setupAuthSocket } from "./socket/AuthSocket.js";
 import { PlayRouter } from "./routes/play.js";
 dotenv.config();
 // Connect the Mongoose Adapter
@@ -42,9 +43,13 @@ const app = express();
 // Base HTTP Server to use REST API and Socket over the same HTTP Server
 const server = http.createServer(app);
 // Websocket for realtime data
-const io = new Server(server, {
+const publicSocket = new Server(server, {
     cors: corsOptions,
-    path: "/gamesock"
+    path: "/publicsock"
+});
+const authSocket = new Server(server, {
+    cors: corsOptions,
+    path: "/authsock"
 });
 // Initialize Express Middleware
 app.use(cors(corsOptions));
@@ -54,7 +59,8 @@ app.use(passport.initialize());
 // Initialize Routes and SocketHandlers
 app.use('/auth', AuthRouter);
 app.use('/play', PlayRouter);
-setupGameSocket(io);
+setupPublicSocket(publicSocket);
+setupAuthSocket(authSocket, process.env.JWT_SECRET_KEY);
 // Start the HTTP Server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {

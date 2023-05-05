@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { onConnected, socket } from "$lib/socket/socket";
+  import { onPubSock, pubSocket } from "$lib/socket/socket";
     import LeaderboardItem from "./leaderboardItem.svelte";
 
-  onConnected(() => {
-    socket.emit("subscribeLeaderboard");
+  onPubSock(() => {
+    pubSocket.emit("subscribeLeaderboard");
 
-    socket.on("leaderboardUpdate", (leaderboard) => {
+    pubSocket.on("leaderboardUpdate", (leaderboard) => {
         Leaderboard = leaderboard;
     });
 
-    socket.on("leaderboardUpdateError", (error) => {
+    pubSocket.on("leaderboardUpdateError", (error) => {
         errormsg = error;
     })
   });

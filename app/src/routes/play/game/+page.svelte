@@ -1,17 +1,17 @@
 <script lang="ts">
   import { page } from "$app/stores";
-  import { socket, onConnected } from "$lib/socket/socket";
+  import { pubSocket, onPubSock } from "$lib/socket/socket";
 
   // Read Gameid from URL Parameter
   const gameid = $page.url.searchParams.get('gameid');
 
-  onConnected(() => {
-    socket.emit("subscribeGame", gameid);
+  onPubSock(() => {
+    pubSocket.emit("subscribeGame", gameid);
 
-    socket.on("gameUpdate", (game) => {
+    pubSocket.on("gameUpdate", (game) => {
         board = game;
     });
-    socket.on("gameUpdateError", (error, exacterror) => {
+    pubSocket.on("gameUpdateError", (error, exacterror) => {
         errormsg = error;
     });
   });

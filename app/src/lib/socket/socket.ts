@@ -1,14 +1,29 @@
 import { io, type Socket } from "socket.io-client";
 
-export let socket: Socket;
+export let pubSocket: Socket;
+export let authSocket: Socket;
 
-export const onConnected = (callback: any) => {
-  if (!socket) {
-    socket = io(import.meta.env.VITE_API_URL, { path: "/gamesock" });
+export const onPubSock = (callback: any) => {
+  if (!pubSocket) {
+    pubSocket = io(import.meta.env.VITE_API_URL, { path: "/publicsock" });
   }
-  if (socket.connected) {
+  if (pubSocket.connected) {
     callback();
   } else {
-    socket.on("connect", callback);
+    pubSocket.on("connect", callback);
+  }
+}
+
+export const onAuthSock = (token: string, callback: any) => {
+  if (!authSocket) {
+    authSocket = io(import.meta.env.VITE_API_URL, { 
+      path: "/authsock",
+      query: { token }
+    });
+  }
+  if (authSocket.connected) {
+    callback();
+  } else {
+    authSocket.on("connect", callback);
   }
 }

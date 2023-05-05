@@ -1,7 +1,5 @@
 import express, {Router, Request, Response} from "express";
-import jwt from 'jsonwebtoken';
 import passport from "passport";
-import { User } from "../models/user.js";
 import { Game } from "../models/game.js";
 import { GameQueue } from "../models/queue.js";
 import { createGame, move } from "../game/gamehandler.js";
