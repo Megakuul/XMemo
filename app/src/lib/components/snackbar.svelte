@@ -13,14 +13,17 @@
   import { fade } from 'svelte/transition';
   import { SnackBar, type ISnackbar } from './snackbar.store';
 
-  $: if ($SnackBar.visible) {
+  $: if ($SnackBar.message) {
+    const tempMessage = $SnackBar.message;
     setTimeout(() => {
-        $SnackBar.visible = false;
+        if ($SnackBar.message == tempMessage) {
+          $SnackBar.message = null;
+        }
     }, $SnackBar.delay);
   }
 </script>
 
-{#if $SnackBar.visible}
+{#if $SnackBar.message}
 <div
   class="snackbar"
   style="background-color: {$SnackBar.color};"

@@ -6,11 +6,11 @@
     pubSocket.emit("subscribeLeaderboard");
 
     pubSocket.on("leaderboardUpdate", (leaderboard) => {
-        Leaderboard = leaderboard;
+      Leaderboard = leaderboard;
     });
 
     pubSocket.on("leaderboardUpdateError", (error) => {
-        errormsg = error;
+      errormsg = error;
     })
   });
 

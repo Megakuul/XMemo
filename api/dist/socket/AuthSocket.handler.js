@@ -1,4 +1,4 @@
-import { Game } from "../models/game";
+import { Game } from "../models/game.js";
 /**
  * Sends Current Games to the user
  *
@@ -12,23 +12,38 @@ import { Game } from "../models/game";
  */
 export const handleCurrentGameUpdate = async (socket, userid, successStream, errorStream, unsubscribeStream) => {
     try {
-        // Constructing pipe to select the Game to watch
-        const pipe = [
+        // Constructing pipe to select games to watch
+        const watchPipe = [
             {
                 $match: {
+                    "operationType": "insert",
                     $or: [
-                        { p1_id: userid },
-                        { p2_id: userid }
-                    ],
-                    winner_username: { $in: [null, undefined] }
+                        { "fullDocument.p1_id": userid },
+                        { "fullDocument.p2_id": userid }
+                    ]
                 }
             },
         ];
+        // Fetch inital Games
+        const games = await Game.find({
+            $or: [
+                { "p1_id": userid },
+                { "p2_id": userid }
+            ]
+        });
+        if (!games) {
+            socket.emit(errorStream, `No Games found`);
+            return;
+        }
+        // Load initial Games
+        games.forEach((game) => {
+            socket.emit(successStream, game);
+        });
         // Retrieve live datastream from the database
-        const gamesStream = Game.watch(pipe);
+        const gamesStream = Game.watch(watchPipe);
         // Fire a gameupdate when the data changes
         gamesStream.on("change", async (change) => {
-            socket.emit(successStream, change);
+            socket.emit(successStream, change.fullDocument);
         });
         // Close live datastream on unsubscribe
         socket.on(unsubscribeStream, () => {

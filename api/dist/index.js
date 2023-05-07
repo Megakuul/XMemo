@@ -1,6 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import dotenvSafe from "dotenv-safe";
 import bodyParser from "body-parser";
 import cors from "cors";
 import http from "http";
@@ -12,7 +13,17 @@ import { AuthRouter } from "./routes/auth.js";
 import { setupPublicSocket } from "./socket/PublicSocket.js";
 import { setupAuthSocket } from "./socket/AuthSocket.js";
 import { PlayRouter } from "./routes/play.js";
+// Load environment variables from .env
 dotenv.config();
+// Check environment variables
+try {
+    dotenvSafe.config();
+}
+catch (err) {
+    const missingVars = err.missing.join(", ");
+    console.error(`Error: Following Environment variables were missing: ${missingVars}`);
+    process.exit(1);
+}
 // Connect the Mongoose Adapter
 try {
     await connectMongoose(mongoose, process.env.DB_AUTH_STRING);

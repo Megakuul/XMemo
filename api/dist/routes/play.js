@@ -9,7 +9,7 @@ PlayRouter.post('/queue', passport.authenticate('jwt', { session: false }), asyn
         // Check if player was already in the queue -> remove the player from the queue
         if (await GameQueue.findOneAndDelete({ user_id: req.user._id })) {
             return res.status(200).json({
-                message: "Successfully removed player from the queue"
+                message: "Removed player from the queue"
             });
         }
         // Add player to the queue
@@ -24,11 +24,11 @@ PlayRouter.post('/queue', passport.authenticate('jwt', { session: false }), asyn
             await createGame(p1.user_id, p2.user_id, p1.username, p2.username, 20);
             // TODO: Maybe redirect user to the board
             return res.status(200).json({
-                message: "Successfully created game",
+                message: "Created Game",
             });
         }
         res.status(200).json({
-            message: "Successfully added player to the queue"
+            message: "Added player to the queue"
         });
     }
     catch (err) {

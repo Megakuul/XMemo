@@ -18,12 +18,10 @@
       } else {
         await ChangePassword(getCookie("auth"), password, newpassword);
 
-        $SnackBar.visible = true;
         $SnackBar.message = "Successfully changed Password";
         $SnackBar.color = "green"
       }
     } catch (err: any) {
-      $SnackBar.visible = true;
       $SnackBar.message = err.message;
       $SnackBar.color = "red"
     }

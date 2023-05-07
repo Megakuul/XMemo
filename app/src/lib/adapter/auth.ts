@@ -68,6 +68,12 @@ export const Login = async (username: string, password: string): Promise<any> =>
   }
 }
 
+/**
+ * This function will register a new user
+ * @param username Username
+ * @param email Email Address
+ * @param password Password
+ */
 export const Register = async (username: string, email: string, password: string): Promise<void> => {
   const resp = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
     method: 'POST',
@@ -89,6 +95,12 @@ export const Register = async (username: string, email: string, password: string
   }
 }
 
+/**
+ * This function will change the information of a user
+ * @param token Auth token (Bearer)
+ * @param newusername New Username
+ * @param newdescription New Description
+ */
 export const ChangeUser = async (token: string | null, newusername: string, newdescription: string): Promise<void> => {
   const resp = await fetch(`${import.meta.env.VITE_API_URL}/auth/editprofile`, {
     method: 'POST',
@@ -110,6 +122,12 @@ export const ChangeUser = async (token: string | null, newusername: string, newd
   }
 }
 
+/**
+ * This function will change the password of a user
+ * @param token Auth token (Bearer)
+ * @param oldpassword Old Password
+ * @param newpassword New Password
+ */
 export const ChangePassword = async (token: string | null, oldpassword: string, newpassword: string): Promise<void> => {
   const resp = await fetch(`${import.meta.env.VITE_API_URL}/auth/editpassword`, {
     method: 'POST',

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from "$app/stores";
   import { pubSocket, onPubSock } from "$lib/socket/socket";
+  import type { IGame } from "$lib/types";
 
   // Read Gameid from URL Parameter
   const gameid = $page.url.searchParams.get('gameid');
@@ -18,7 +19,7 @@
 
 
   let errormsg: any = null;
-  let board: any;
+  let board: IGame;
 </script>
 
 <div class="main-board">

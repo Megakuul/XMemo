@@ -1,6 +1,20 @@
 import { Server, Socket } from "socket.io";
 import jwt from "jsonwebtoken";
+import { handleCurrentGameUpdate } from "./AuthSocket.handler.js";
 
+/**
+ * Initializes the Public Socket
+ * 
+ * This Socket can be accessed by everyone, it is not authenticating the user
+ * 
+ * To use a authenticated session, use the AuthSocket 
+ * 
+ * 
+ * Sideeffects:
+ * This function will use the provided io (Server) object to send and receive messages
+ * @param io Websocket Server
+ * @param secret JWT Secret from the server
+ */
 export const setupAuthSocket = async (io: Server, secret: string | undefined) => {
   io.on("connection", async (socket: Socket) => {
     const token = socket.handshake.query?.token;
@@ -21,10 +35,15 @@ export const setupAuthSocket = async (io: Server, secret: string | undefined) =>
         tok = token.toString();
       }
       
-      const decoded: any = jwt.verify(tok, secret);
+      const decodedToken: any = jwt.verify(tok, secret);
 
-      console.log(decoded);
-      console.log(decoded._id);
+      socket.on("subscribeCurrentGames", () => {
+        handleCurrentGameUpdate(socket, decodedToken.id, 
+          "currentGamesUpdate", 
+          "currentGamesUpdateError", 
+          "unsubscribeCurrentGames"
+        );
+      });
 
     } catch (err: any) {
       socket.emit("connectionError", "Invalid token" + err.message);

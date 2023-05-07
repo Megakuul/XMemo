@@ -4,6 +4,18 @@ import { User } from "../models/user.js";
 import { handleGameUpdate, useDatabaseTrigger  } from "./PublicSocket.handler.js";
 import { emitSeveral, removeDisconnectedSockets, removeFromList } from "./PublicSocket.helper.js";
 
+/**
+ * Initializes the Public Socket
+ * 
+ * This Socket can be accessed by everyone, it is not authenticating the user
+ * 
+ * To use a authenticated session, use the AuthSocket 
+ * 
+ * 
+ * Sideeffects:
+ * This function will use the provided io (Server) object to send and receive messages
+ * @param io Websocket Server
+ */
 export const setupPublicSocket = async (io: Server) => {
 
   let Queue: any;

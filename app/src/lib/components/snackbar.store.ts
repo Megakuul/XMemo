@@ -1,17 +1,15 @@
 import { writable } from "svelte/store";
 
 export interface ISnackbar {
-  visible: Boolean;
-  message: String;
+  message: String | null;
   color: String;
   delay: number;
 }
 
 const initialState: ISnackbar = {
-  visible: false,
-  message: "",
+  message: null,
   color: "",
-  delay: 3000,
+  delay: 2500,
 };
 
 export const SnackBar = writable<ISnackbar>(initialState);
