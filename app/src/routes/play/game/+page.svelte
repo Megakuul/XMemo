@@ -6,6 +6,8 @@
   import { pubSocket, onPubSock } from "$lib/socket/socket";
   import type { ICard, IGame } from "$lib/types";
     import { onMount } from "svelte";
+    import { fade, slide } from "svelte/transition";
+    import Card from "./card.svelte";
 
   // Read Gameid from URL Parameter
   const gameid = $page.url.searchParams.get('gameid');
@@ -15,7 +17,6 @@
   let errormsg: any = null;
   let board: IGame;
   let cards_buf: ICard[] = [];
-  let rotationStates: Map<number, boolean> = new Map();
 
   onMount(() => {
     jwt = getCookie("auth");
@@ -37,28 +38,22 @@
       const prevCard = cards_buf[index] || {};
       const discovered = card.discovered;
       if (prevCard.discovered !== discovered) {
-        rotationStates.set(index, true);
         console.log("Settrr")
-        setTimeout(() => {
-          rotationStates.set(index, false);
-        }, 600);
+        card.rotate = true;
       }
     });
 
-    cards_buf = deepCopy(board.cards);
+    cards_buf = board.cards.map(card => ({ ...card }));
   }
 
-  function deepCopy(cards: ICard[]): ICard[] {
-    return cards.map(card => ({ ...card }));
-  }
-
-  function getRotation(index: number) {
-    return rotationStates.get(index) ? 'rotateY(360deg)' : '';
-  }
-
-  async function move() {
+  async function move(cardid: string) {
     try {
-      let queueMessage = await Move();
+      if (!gameid) {
+        $SnackBar.message = "No valid Game";
+        $SnackBar.color = "red";
+        return;
+      }
+      await Move(jwt, gameid, cardid);
     } catch (err: any) {
       $SnackBar.message = err.message;
       $SnackBar.color = "red";
@@ -71,14 +66,8 @@
 {#if board && board.cards}
   <h1>{board.p1_username} vs {board.p2_username}</h1>
   <div class="main-board"> 
-    {#each board.cards as card, index}
-      <div
-        class="card"
-        style="transform: {getRotation(index)}"
-        
-      >
-      {card.discovered ? card.tag : ""}
-      </div>
+    {#each board.cards as card}
+      <Card card={card} move={move}/>
     {/each}
   </div>
 
@@ -89,7 +78,6 @@
   <p class="loading-msg">Loading...</p>
 {/if}
 
-
 <style>
   .main-board {
     display: flex;
@@ -99,28 +87,5 @@
     align-items: center;
   }
 
-  .card {
-    width: 100px;
-    height: 100px;
-    cursor: pointer;
-    margin: 10px;
-
-    background-color: var(--gray);
-    box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
-
-    transition: all ease 1s;
-  }
-
-  .card.rotate {
-    animation: spin 0.6s linear;
-  }
-
-  @keyframes spin {
-    from {
-      transform: rotateY(0deg);
-    }
-    to {
-      transform: rotateY(360deg);
-    }
-  }
+  
 </style>

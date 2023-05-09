@@ -1,4 +1,5 @@
 export interface ICard {
+  rotate: boolean;
   _id: string;
   tag: string;
   discovered: boolean;
