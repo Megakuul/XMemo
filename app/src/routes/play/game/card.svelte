@@ -1,8 +1,10 @@
 <script lang="ts">
+  import RandomIcon from "$lib/components/RandomIcon.svelte";
   import type { ICard } from "$lib/types";
 
   export let card: ICard;
   export let move: any;
+  export let salt: string;
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -10,7 +12,11 @@
   class="card {card.discovered ? 'flip' : 'unflip'}"
   on:click={() => move(card._id)}
 >
-  {card.tag}
+  {#if card.discovered}
+    <RandomIcon tag={card.tag} salt={salt} size="100"></RandomIcon>
+  {:else}
+    
+  {/if}
 </div>
 
 <style>

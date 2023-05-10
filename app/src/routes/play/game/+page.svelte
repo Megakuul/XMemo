@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { page } from "$app/stores";
+    import { page } from "$app/stores";
     import { Move } from "$lib/adapter/play";
     import { SnackBar } from "$lib/components/snackbar.store";
     import { getCookie } from "$lib/cookies";
-  import { pubSocket, onPubSock } from "$lib/socket/socket";
-  import type { ICard, IGame } from "$lib/types";
+    import { pubSocket, onPubSock } from "$lib/socket/socket";
+    import type { ICard, IGame } from "$lib/types";
     import { onMount } from "svelte";
-    import { fade, slide } from "svelte/transition";
     import Card from "./card.svelte";
 
   // Read Gameid from URL Parameter
@@ -38,7 +37,6 @@
       const prevCard = cards_buf[index] || {};
       const discovered = card.discovered;
       if (prevCard.discovered !== discovered) {
-        console.log("Settrr")
         card.rotate = true;
       }
     });
@@ -67,7 +65,7 @@
   <h1>{board.p1_username} vs {board.p2_username}</h1>
   <div class="main-board"> 
     {#each board.cards as card}
-      <Card card={card} move={move}/>
+      <Card card={card} move={move} salt={board.p1_id+board.p2_id}/>
     {/each}
   </div>
 

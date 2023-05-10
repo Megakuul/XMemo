@@ -1,28 +1,32 @@
-<script lang="ts">
+<script>
+// @ts-nocheck
   import Identicon from "identicon.js";
   import crypto from "crypto-js";
   import { onMount } from "svelte";
 
-  export let size = 64;
-  export let seed = Math.random().toString(36).substr(2, 9);
+  export let size;
+  export let salt;
+  export let tag;
+  let seed = tag + salt;
 
-  let canvas: HTMLDivElement;
+  let src;
 
   onMount(() => {
     const hash = crypto.MD5(seed).toString();
     const identicon = new Identicon(hash, {
       size,
       format: "svg",
+      background: [44, 47, 51, 255]
     });
 
-    canvas.innerHTML = identicon.toString();
+    src = `data:image/svg+xml;base64,${identicon.toString()}`;
   });
 </script>
 
-<div bind:this="{canvas}"></div>
+<img {src} alt="Random identicon" width="{size}" height="{size}" />
 
 <style>
-  div {
+  img {
     display: inline-block;
   }
 </style>
