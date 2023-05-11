@@ -1,40 +1,89 @@
 <script lang="ts">
+  import { writable, derived } from 'svelte/store';
   import RandomIcon from "$lib/components/RandomIcon.svelte";
   import type { ICard } from "$lib/types";
+    import AnimatedIcon from '$lib/components/AnimatedIcon.svelte';
 
   export let card: ICard;
   export let move: any;
   export let salt: string;
+
+  // Previous Card Store
+  const prevCard = writable<ICard | null>(null);
+  // Current Card Store
+  const currentCard = writable<ICard>(card);
+
+  /**
+   * This function is checking if the current card has the same discovered State as the previous card
+   * 
+   * The function will always be executed if the Sveltestore State changes
+   */
+  const cardChanged = derived(
+    [prevCard, currentCard],
+    ([$prevCard, $currentCard]) => $prevCard && $prevCard.discovered !== $currentCard.discovered
+  );
+
+  // This will set the previous card and the current card if the State of the cards get changed
+  $: if (card) {
+    prevCard.set($currentCard);
+    currentCard.set(card);
+  }
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-  class="card {card.discovered ? 'flip' : 'unflip'}"
+  class="card {card.discovered ? 'flip' : 'unflip'} { $cardChanged ? 'animate' : '' }"
   on:click={() => move(card._id)}
 >
-  {#if card.discovered}
+  {#if card.captured}
+    <div class="cardcaptured">
+    </div>
+  {:else if card.discovered}
     <RandomIcon tag={card.tag} salt={salt} size="100"></RandomIcon>
   {:else}
-    
+    <div class="cardbackside">
+      <AnimatedIcon height="70" width="70" color="rgb(255,255,255,0.6)" animationoption="8s ease"/>
+    </div>
   {/if}
 </div>
 
 <style>
+  .animate.flip {
+    animation: flip 1s;
+  }
+
+  .animate.unflip {
+    animation: unflip 1s;
+  }
+
   .card {
     width: 100px;
     height: 100px;
-    cursor: pointer;
     margin: 10px;
+    border-radius: 8px;
 
     box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
   }
 
-  .flip {
-    animation: flip 1s;
+  .cardbackside {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.5);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
-  .unflip {
-    animation: unflip 1s;
+  .cardcaptured {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    
+    background-color: rgba(0, 0, 0, 0.2);
   }
 
   @keyframes flip {

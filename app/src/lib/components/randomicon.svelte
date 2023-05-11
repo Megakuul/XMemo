@@ -28,5 +28,6 @@
 <style>
   img {
     display: inline-block;
+    border-radius: 8px;
   }
 </style>

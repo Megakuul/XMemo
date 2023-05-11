@@ -76,6 +76,9 @@ export const move = async (game, enemy_id, discover_id) => {
     if (!changedCard) {
         throw new Error(`Card with id: ${discover_id} not found`);
     }
+    if (changedCard.captured) {
+        throw new Error(`Card is already captured`);
+    }
     switch (game.game_stage) {
         case 1:
             await handleStage1(game);
@@ -154,6 +157,7 @@ const handleStage2 = async (game, enemy_id, changedCard) => {
 const captureMatchedCards = (game, cards) => {
     for (let i = 0; i < cards.length; i++) {
         cards[i].captured = true;
+        cards[i].discovered = false;
         cards[i].owner_id = game.active_id;
     }
 };
