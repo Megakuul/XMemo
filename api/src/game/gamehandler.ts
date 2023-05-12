@@ -90,6 +90,10 @@ export const move = async (game: IGame, enemy_id: string, discover_id: number): 
     throw new Error(`Card is already captured`);
   }
 
+  if (changedCard.discovered) {
+    throw new Error(`Card is already discovered`);
+  }
+
   switch (game.game_stage) {
     case 1:
       await handleStage1(game);
@@ -107,6 +111,7 @@ export const move = async (game: IGame, enemy_id: string, discover_id: number): 
   game.moves++;
   // Set the discovered card to discovered
   changedCard!.discovered = true;
+  game.active_id=game.active_id;
   // Save the changes
   await game.save();
 };
@@ -149,14 +154,13 @@ const handleStage2 = async (game: IGame, enemy_id: string, changedCard: ICard): 
       captureMatchedCards(game, [ changedCard, game.cards[i] ]);
 
       foundMatch = true;
-      break;
     }
 
     // Check if a cards is not captured
     if (!game.cards[i].captured) {
       foundWinner = false;
     }
-  }
+  } 
 
   // If a winner is found
   if (foundWinner) {

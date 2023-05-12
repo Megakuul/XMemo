@@ -54,10 +54,11 @@ PlayRouter.get('/queue', async (req, res) => {
     }
 });
 PlayRouter.post('/move', passport.authenticate('jwt', { session: false }), async (req, res) => {
+    let game;
     try {
         const gameid = req.query.gameid;
         const discover_id = req.body.discover_id;
-        const game = await Game.findById(gameid);
+        game = await Game.findById(gameid);
         if (!game) {
             return res.status(404).json({
                 message: "Error on move",
@@ -72,12 +73,11 @@ PlayRouter.post('/move', passport.authenticate('jwt', { session: false }), async
         }
         // This will lock the active_id to prevent a spamming attack
         // The active_id will be re-set in the move() function below
-        if (!await Game.findOneAndUpdate({ _id: gameid }, { $set: { active_id: undefined }, })) {
-            return res.status(500).json({
-                message: "Error on move",
-                error: "Failed to update the game"
-            });
-        }
+        const active_id_buf = game.active_id;
+        game.active_id = "";
+        await game.save();
+        // Reset the active id
+        game.active_id = active_id_buf;
         // This will handle the main logic of the programm
         const enemy_id = game.active_id === game.p1_id ? game.p2_id : game.p1_id;
         await move(game, enemy_id, discover_id);
@@ -86,6 +86,9 @@ PlayRouter.post('/move', passport.authenticate('jwt', { session: false }), async
         });
     }
     catch (err) {
+        if (game) {
+            game.save();
+        }
         return res.status(400).json({
             message: "Error on move",
             error: err.message

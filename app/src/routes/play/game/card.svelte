@@ -2,7 +2,7 @@
   import { writable, derived } from 'svelte/store';
   import RandomIcon from "$lib/components/RandomIcon.svelte";
   import type { ICard } from "$lib/types";
-    import AnimatedIcon from '$lib/components/AnimatedIcon.svelte';
+  import AnimatedIcon from '$lib/components/AnimatedIcon.svelte';
 
   export let card: ICard;
   export let move: any;
@@ -18,7 +18,7 @@
    * 
    * The function will always be executed if the Sveltestore State changes
    */
-  const cardChanged = derived(
+  const discoveredStateChanged = derived(
     [prevCard, currentCard],
     ([$prevCard, $currentCard]) => $prevCard && $prevCard.discovered !== $currentCard.discovered
   );
@@ -32,17 +32,17 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-  class="card {card.discovered ? 'flip' : 'unflip'} { $cardChanged ? 'animate' : '' }"
+  class="card {card.discovered ? 'flip' : 'unflip'} { $discoveredStateChanged ? 'animate' : '' }"
   on:click={() => move(card._id)}
 >
   {#if card.captured}
     <div class="cardcaptured">
     </div>
   {:else if card.discovered}
-    <RandomIcon tag={card.tag} salt={salt} size="100"></RandomIcon>
+    <RandomIcon tag={card.tag} salt={salt}></RandomIcon>
   {:else}
     <div class="cardbackside">
-      <AnimatedIcon height="70" width="70" color="rgb(255,255,255,0.6)" animationoption="8s ease"/>
+      <AnimatedIcon height="75" width="75" color="rgb(255,255,255,0.6)" animationoption="8s ease"/>
     </div>
   {/if}
 </div>
@@ -61,8 +61,13 @@
     height: 100px;
     margin: 10px;
     border-radius: 8px;
+    user-select: none;
 
     box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+  }
+
+  .card:hover {
+    box-shadow: rgba(0, 0, 0, 0.2) 3px 3px 4px;
   }
 
   .cardbackside {
@@ -101,6 +106,20 @@
     }
     100% {
       transform: rotateY(360deg);
+    }
+  }
+
+  @media only screen and (min-width: 1600px) {
+    .card {
+      width: 150px;
+      height: 150px;
+    }
+  }
+
+  @media only screen and (max-width: 500px) {
+    .card {
+      width: 70px;
+      height: 70px;
     }
   }
 </style>
