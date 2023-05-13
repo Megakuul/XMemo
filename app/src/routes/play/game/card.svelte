@@ -59,7 +59,7 @@
   .card {
     width: 100px;
     height: 100px;
-    margin: 10px;
+    margin: 7px;
     border-radius: 8px;
     user-select: none;
 
@@ -113,13 +113,15 @@
     .card {
       width: 150px;
       height: 150px;
+      margin: 10px;
     }
   }
 
-  @media only screen and (max-width: 500px) {
+  @media only screen and (max-width: 700px) {
     .card {
-      width: 70px;
-      height: 70px;
+      width: 30px;
+      height: 30px;
+      margin: 3px;
     }
   }
 </style>

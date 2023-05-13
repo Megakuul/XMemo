@@ -22,6 +22,12 @@ AuthRouter.post('/register', async (req, res) => {
             error: "Email has invalid format"
         });
     }
+    if (username.length > 15) {
+        return res.status(405).json({
+            message: "Error registering user",
+            error: "Make sure the username is no longer than 15 characters"
+        });
+    }
     try {
         const user = new User({
             username: username,
@@ -79,6 +85,18 @@ AuthRouter.post('/editprofile', passport.authenticate('jwt', { session: false })
             error: "At least one field (username or password) is required"
         });
     }
+    if (newusername.length > 15) {
+        return res.status(405).json({
+            message: "Error updating user",
+            error: "Make sure the username is no longer than 15 characters"
+        });
+    }
+    else if (newdescription.length > 100) {
+        return res.status(405).json({
+            message: "Error updating user",
+            error: "Make sure the description is no longer than 100 characters"
+        });
+    }
     const user = await User.findOne({ _id: req.user._id });
     if (newusername) {
         user.username = newusername;
@@ -100,6 +118,12 @@ AuthRouter.post('/editpassword', passport.authenticate('jwt', { session: false }
     const { oldpassword, newpassword } = req.body;
     if (!newpassword || !oldpassword) {
         return res.status(400).json({ message: "Error changing password", error: "Old and New Password is required" });
+    }
+    if (newpassword.length < 8 || newpassword.length > 32) {
+        return res.status(405).json({
+            message: "Error changing password",
+            error: "New password needs to be between 8 and 32 characters long."
+        });
     }
     if (!await req.user.comparePassword(oldpassword)) {
         return res.status(400).json({ message: "Error changing password", error: "Invalid password" });

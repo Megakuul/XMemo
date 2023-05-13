@@ -24,7 +24,16 @@ p {
 	font-weight: 400;
 }
 
+h1 {
+	font-size: 40px;
+}
+
+h2 {
+	font-size: 30px;
+}
+
 p {
+	font-size: 18px;
 	line-height: 1.5;
 }
 
@@ -68,5 +77,37 @@ h2 {
 @media screen and (max-width: 1000px) {
 	.title {
 		font-size: 40px;
+	}
+}
+
+@media screen and (min-width: 1600px) {
+	h1 {
+		font-size: 50px;
+	}
+
+	h2 {
+		font-size: 40px;
+	}
+
+	p {
+		font-size: 25px;
+	}
+}
+
+@media screen and (max-width: 700px) {
+	.title {
+		font-size: 20px;
+	}
+
+	h1 {
+		font-size: 20px;
+	}
+
+	h2 {
+		font-size: 15px;
+	}
+
+	p {
+		font-size: 10px;
 	}
 }

@@ -75,9 +75,9 @@
   {/if}
 
   <div class="main-title">
-    <h1>{board.p1_username}</h1>
-    <h1> vs </h1>
-    <h1>{board.p2_username}</h1>
+    <h1 class="title-name">{board.p1_username}</h1>
+    <h1>vs</h1>
+    <h1 class="title-name">{board.p2_username}</h1>
   </div>
   <div class="main-table">
     <div class="main-board"> 
@@ -109,8 +109,9 @@
     left: 50%;
     transform: translate(-50%, -50%);
     width: 100%;
-    height: 200px;
+    height: 250px;
     opacity: 0.8;
+    box-shadow: rgba(17, 17, 26, 0.1) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px;
     
     display: flex;
     flex-direction: column;
@@ -128,7 +129,23 @@
   .main-title {
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    justify-content: space-around;
+    align-items: center;
+  }
+  
+  .main-title .title-name {
+    width: 600px;
+    overflow: hidden;
+  }
+
+  @media screen and (max-width: 500px) {
+    .main-title {
+      flex-direction: column;
+      justify-content: center;
+    }
+    .main-title .title-name {
+      width: 90%;
+    }
   }
 
   .main-table {
@@ -141,6 +158,9 @@
 
   .main-table .main-board {
     width: 90%;
+    padding: 10px 0 10px 0;
+    background-color: rgb(255, 255, 255, 0.05);
+    border-radius: 12px;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -151,23 +171,25 @@
   .main-table .player-table {
     margin-top: 3rem;
     width: 90%;
-    min-height: 200px;
+    min-height: 300px;
     display: flex;
     flex-direction: row;
     justify-content: space-around;
   }
 
   .main-table .player-table .player-bx {
+    padding: 15px;
     background-color: rgb(0, 0, 0, 0.5);
     border-radius: 12px;
-    width: 40%;
+    width: 45%;
     overflow: hidden;
     text-align: center;
 
     font-size: larger;
   }
 
-  p {
+  .main-table .player-table .player-bx p {
+    letter-spacing: 3px;
     font-weight: 900;
   }
 

@@ -28,6 +28,13 @@ AuthRouter.post('/register', async (req, res) => {
     });
   }
 
+  if (username.length > 15) {
+    return res.status(405).json({
+      message: "Error registering user",
+      error: "Make sure the username is no longer than 15 characters"
+    });
+  }
+
   try {
     const user = new User({
       username: username,
@@ -95,6 +102,18 @@ AuthRouter.post('/editprofile',
       });
     }
 
+    if (newusername.length > 15) {
+      return res.status(405).json({
+        message: "Error updating user",
+        error: "Make sure the username is no longer than 15 characters"
+      });
+    } else if (newdescription.length > 100) {
+      return res.status(405).json({
+        message: "Error updating user",
+        error: "Make sure the description is no longer than 100 characters"
+      });
+    }
+
     const user: any = await User.findOne({ _id: req.user._id });
 
     if (newusername) {
@@ -123,6 +142,13 @@ AuthRouter.post('/editpassword',
 
     if (!newpassword || !oldpassword) {
       return res.status(400).json({ message: "Error changing password", error: "Old and New Password is required" })
+    }
+
+    if (newpassword.length < 8 || newpassword.length > 32) {
+      return res.status(405).json({
+        message: "Error changing password",
+        error: "New password needs to be between 8 and 32 characters long."
+      });
     }
 
     if (!await req.user.comparePassword(oldpassword)) {

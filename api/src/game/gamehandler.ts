@@ -102,7 +102,7 @@ export const move = async (game: IGame, enemy_id: string, discover_id: number): 
       await handleStage2(game, enemy_id, changedCard!);
       break;
     case -1:
-      throw new Error(`Game is finished the winner is ${game.winner_username} the game is now readonly`);
+      throw new Error(`Game has finished and is now readonly`);
     default:
       throw new Error(`The game has become corrupted. Please contact an administrator for assistance.`);
   }

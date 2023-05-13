@@ -65,6 +65,12 @@ PlayRouter.post('/move', passport.authenticate('jwt', { session: false }), async
                 error: `Game with id: ${gameid} not found`
             });
         }
+        if (game.game_stage === -1) {
+            return res.status(400).json({
+                message: "Error on move",
+                error: `Game has finished and is now readonly`
+            });
+        }
         if (game.active_id !== req.user._id.toString()) {
             return res.status(403).json({
                 message: "Error on move",
