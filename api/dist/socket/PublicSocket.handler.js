@@ -40,7 +40,7 @@ export const useDatabaseTrigger = async (Model, callback) => {
  * @param unsubscribeStream Stream where the client can unsubscribe to the Game
  * @returns Void
  */
-export const handleGameUpdate = async (socket, gameId, successStream, errorStream, unsubscribeStream) => {
+export const handleGameUpdate = async (socket, gameId, successStream, errorStream) => {
     try {
         let game = await Game.findById(gameId);
         if (!game) {
@@ -69,8 +69,8 @@ export const handleGameUpdate = async (socket, gameId, successStream, errorStrea
             }
             socket.emit(successStream, formatGameboard(game));
         });
-        // Close live datastream on unsubscribe
-        socket.on(unsubscribeStream, () => {
+        // Close live datastream on disconnect
+        socket.once("disconnect", () => {
             gameStream.close();
         });
     }

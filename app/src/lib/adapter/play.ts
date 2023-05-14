@@ -44,6 +44,8 @@ export const Move = async (token: string | null, game_id: string, discover_id: s
 
   if (resp.ok) {
     return;
+  } else if (resp.status == 401) {
+    throw new Error("Log in to contribute to the Game");
   } else {
     const body = await resp.json();
     throw new Error(body.error);

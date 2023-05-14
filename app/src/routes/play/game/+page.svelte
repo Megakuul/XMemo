@@ -3,34 +3,44 @@
     import { Move } from "$lib/adapter/play";
     import { SnackBar } from "$lib/components/snackbar.store";
     import { getCookie } from "$lib/cookies";
-    import { pubSocket, onPubSock } from "$lib/socket/socket";
+    import { onPubSock } from "$lib/socket/socket";
     import type { ICard, IGame } from "$lib/types";
-    import { onMount } from "svelte";
+    import { onDestroy, onMount } from "svelte";
     import Card from "./card.svelte";
     import { fade } from "svelte/transition";
+    import type { Socket } from "socket.io-client";
 
   // Read Gameid from URL Parameter
   const gameid = $page.url.searchParams.get('gameid');
 
   let jwt: string | null;
 
+  let cleanPubSock: any;
+
   let errormsg: any = null;
+
   let board: IGame;
   let cards_buf: ICard[] = [];
 
   onMount(() => {
     jwt = getCookie("auth");
 
-    onPubSock(() => {
-      pubSocket.emit("subscribeGame", gameid);
+    cleanPubSock = onPubSock((socket: Socket) => {
+      socket.emit("subscribeGame", gameid);
 
-      pubSocket.on("gameUpdate", (game) => {
-          board = game;
+      socket.on("gameUpdate", (game) => {
+        board = game;
       });
-      pubSocket.on("gameUpdateError", (error, exacterror) => {
-          errormsg = error;
+      socket.on("gameUpdateError", (error, exacterror) => {
+        errormsg = error;
       });
     });
+  });
+
+  onDestroy(() => {
+    if (cleanPubSock) {
+      cleanPubSock();
+    }
   })
 
   $: if (board && board.cards) {
@@ -75,10 +85,19 @@
   {/if}
 
   <div class="main-title">
-    <h1 class="title-name">{board.p1_username}</h1>
+    <h1 class="title-name { board.player1.id == board.active_id ? "active" : "" }">{board.player1.username}</h1>
     <h1>vs</h1>
-    <h1 class="title-name">{board.p2_username}</h1>
+    <h1 class="title-name { board.player2.id == board.active_id ? "active" : "" }">{board.player2.username}</h1>
   </div>
+
+  <div class="main-infotable">
+    <div class="infobar">
+      <p class="infobar-item">Moves: {board.moves}</p>
+      <p class="infobar-item">Cards: {board.cards.filter(card => card.captured === false).length}</p>
+      <p class="infobar-item">Stage: {board.game_stage}</p>
+    </div>
+  </div>
+
   <div class="main-table">
     <div class="main-board"> 
       {#each board.cards as card}
@@ -87,10 +106,18 @@
     </div>
     <div class="player-table">
       <div class="player-bx">
-        <p>{board.p1_username}</p>
+        <p>{board.player1.username}</p>
+        <hr>
+        <p>Cards: {board.cards.filter(card => card.owner_id === board.player1.id).length}</p>
+        <p>Title: {board.player1.title}</p>
+        <p>Ranking: {board.player1.ranking}</p>
       </div>
       <div class="player-bx">
-        <p>{board.p2_username}</p>
+        <p>{board.player2.username}</p>
+        <hr>
+        <p>Cards: {board.cards.filter(card => card.owner_id === board.player2.id).length}</p>
+        <p>Title: {board.player2.title}</p>
+        <p>Ranking: {board.player2.ranking}</p>
       </div>
     </div>
   </div>
@@ -131,11 +158,44 @@
     flex-direction: row;
     justify-content: space-around;
     align-items: center;
+
+    letter-spacing: 2px;
+
+    background: linear-gradient(45deg, blue, red);
+    background-size: 200% 200%;
+    background-clip: text;
+    color: transparent;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    animation: gradient-animation 3s linear infinite;
   }
   
   .main-title .title-name {
     width: 600px;
     overflow: hidden;
+    margin: 10px;
+    padding: 10px;
+
+    background-color: rgb(0, 0, 0, 0.1);
+    border-radius: 8px;
+    transition: all ease 1s;
+  }
+
+  .main-title .active {
+    background-color: rgb(255, 255, 255, 0.05);
+  }
+
+  @keyframes gradient-animation {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
   }
 
   @media screen and (max-width: 500px) {
@@ -146,6 +206,27 @@
     .main-title .title-name {
       width: 90%;
     }
+  }
+
+  .main-infotable {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0 40px 0;
+  }
+
+  .main-infotable .infobar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+    width: 90%;
+    border-radius: 8px;
+    background-color: rgb(255, 255, 255, 0.05);
+  }
+
+  .main-infotable .infobar .infobar-item {
+    opacity: 0.8;
+    padding: 0 20px 0 20px;
   }
 
   .main-table {
@@ -171,19 +252,18 @@
   .main-table .player-table {
     margin-top: 3rem;
     width: 90%;
-    min-height: 300px;
+    min-height: 200px;
     display: flex;
     flex-direction: row;
-    justify-content: space-around;
+    justify-content: space-between;
   }
 
   .main-table .player-table .player-bx {
-    padding: 15px;
+    padding: 10px 20px 20px 20px;
     background-color: rgb(0, 0, 0, 0.5);
     border-radius: 12px;
     width: 45%;
     overflow: hidden;
-    text-align: center;
 
     font-size: larger;
   }
@@ -191,6 +271,19 @@
   .main-table .player-table .player-bx p {
     letter-spacing: 3px;
     font-weight: 900;
+  }
+
+  @media screen and (max-width: 750px) {
+    .main-table .player-table {
+      flex-direction: column;
+      justify-content: center;
+      margin-top: 1.5rem;
+    }
+
+    .main-table .player-table .player-bx {
+      width: 90%;
+      margin: 0 0 20px 0;
+    }
   }
 
 </style>

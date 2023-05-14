@@ -7,11 +7,16 @@ export interface ICard {
   owner_id: string;
 }
 
+export interface IPlayer {
+  id: string;
+  username: string;
+  title: string;
+  ranking: number;
+}
+
 export interface IGame {
-  p1_id: string;
-  p2_id: string;
-  p1_username: string;
-  p2_username: string;
+  player1: IPlayer;
+  player2: IPlayer;
   winner_username: string;
   draw: boolean;
   active_id: string;

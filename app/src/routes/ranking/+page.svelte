@@ -1,19 +1,30 @@
 <script lang="ts">
-  import { onPubSock, pubSocket } from "$lib/socket/socket";
-    import LeaderboardItem from "./leaderboardItem.svelte";
+  import { onPubSock } from "$lib/socket/socket";
+  import type { Socket } from "socket.io-client";
+  import LeaderboardItem from "./leaderboardItem.svelte";
+  import { onDestroy, onMount } from "svelte";
 
-  onPubSock(() => {
-    pubSocket.emit("subscribeLeaderboard");
+  let cleanPubSock: any;
 
-    pubSocket.on("leaderboardUpdate", (leaderboard) => {
-      Leaderboard = leaderboard;
+  onMount(() => {
+    cleanPubSock = onPubSock((pubSocket: Socket) => {
+      pubSocket.emit("subscribeLeaderboard");
+
+      pubSocket.on("leaderboardUpdate", (leaderboard) => {
+        Leaderboard = leaderboard;
+      });
+
+      pubSocket.on("leaderboardUpdateError", (error) => {
+        errormsg = error;
+      })
     });
-
-    pubSocket.on("leaderboardUpdateError", (error) => {
-      errormsg = error;
-    })
   });
 
+  onDestroy(() => {
+    if (cleanPubSock) {
+      cleanPubSock();
+    }
+  });
 
   let errormsg: any = null;
   let Leaderboard: any;

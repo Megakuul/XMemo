@@ -8,11 +8,17 @@ export interface ICard {
   owner_id: string;
 }
 
+export interface IPlayer {
+  _id: Types.ObjectId;
+  id: string;
+  username: string;
+  title: string;
+  ranking: number;
+}
+
 export interface IGame extends Document {
-  p1_id: string;
-  p2_id: string;
-  p1_username: string;
-  p2_username: string;
+  player1: IPlayer;
+  player2: IPlayer;
   winner_username: string;
   draw: boolean;
   active_id: string;
@@ -30,11 +36,17 @@ const CardSchema: Schema = new Schema<ICard>({
   owner_id: { type: String, required: false }
 })
 
+const PlayerSchema: Schema = new Schema<IPlayer>({
+  _id: { type: Schema.Types.ObjectId, required: true, auto: true },
+  id: { type: String, required: true },
+  username: { type: String, required: true },
+  title: { type: String, required: true },
+  ranking: { type: Number, required: true }
+})
+
 const GameSchema: Schema = new Schema<IGame>({
-  p1_id: { type: String, required: true },
-  p2_id: { type: String, required: true },
-  p1_username: { type: String, required: true },
-  p2_username: { type: String, required: true },
+  player1: { type: PlayerSchema, required: true },
+  player2: { type: PlayerSchema, required: true },
   winner_username: { type: String },
   draw: { type: Boolean },
   active_id: { type: String },

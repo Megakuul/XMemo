@@ -10,17 +10,6 @@ export const emitSeveral = async (subscriberList, stream, content) => {
     });
 };
 /**
- * Removes a socket from a socketlist
- * @param socket Socket to remove
- * @param list Socketlist
- */
-export const removeFromList = (socket, list) => {
-    const index = list.indexOf(socket);
-    if (index !== -1) {
-        list.splice(index, 1);
-    }
-};
-/**
  * Removes all sockets that are disconnected from the list
  *
  * Example:

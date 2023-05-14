@@ -28,8 +28,8 @@ export const handleCurrentGameUpdate = async (
         $match: {
           "operationType": "insert",
           $or: [
-            { "fullDocument.p1_id": userid },
-            { "fullDocument.p2_id": userid }
+            { "fullDocument.player1.id": userid },
+            { "fullDocument.player2.id": userid }
           ]
         }
       },
@@ -38,8 +38,8 @@ export const handleCurrentGameUpdate = async (
     // Fetch inital Games
     const games: any = await Game.find({
       $or: [
-        { "p1_id": userid },
-        { "p2_id": userid }
+        { "player1.id": userid },
+        { "player2.id": userid }
       ]
     });
     if (!games) {

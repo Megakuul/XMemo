@@ -35,6 +35,9 @@ export const setupAuthSocket = async (io, secret) => {
             socket.on("subscribeCurrentGames", () => {
                 handleCurrentGameUpdate(socket, decodedToken.id, "currentGamesUpdate", "currentGamesUpdateError", "unsubscribeCurrentGames");
             });
+            socket.once("disconnect", () => {
+                socket.removeAllListeners("subscribeCurrentGames");
+            });
         }
         catch (err) {
             socket.emit("connectionError", "Invalid token" + err.message);

@@ -6,11 +6,16 @@ const CardSchema = new Schema({
     captured: { type: Boolean, required: true },
     owner_id: { type: String, required: false }
 });
+const PlayerSchema = new Schema({
+    _id: { type: Schema.Types.ObjectId, required: true, auto: true },
+    id: { type: String, required: true },
+    username: { type: String, required: true },
+    title: { type: String, required: true },
+    ranking: { type: Number, required: true }
+});
 const GameSchema = new Schema({
-    p1_id: { type: String, required: true },
-    p2_id: { type: String, required: true },
-    p1_username: { type: String, required: true },
-    p2_username: { type: String, required: true },
+    player1: { type: PlayerSchema, required: true },
+    player2: { type: PlayerSchema, required: true },
     winner_username: { type: String },
     draw: { type: Boolean },
     active_id: { type: String },

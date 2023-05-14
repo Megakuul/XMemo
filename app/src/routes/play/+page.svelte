@@ -2,8 +2,9 @@
   import { JoinQueue } from "$lib/adapter/play";
   import { SnackBar } from "$lib/components/snackbar.store";
   import { getCookie } from "$lib/cookies";
-  import { authSocket, onAuthSock, onPubSock, pubSocket } from "$lib/socket/socket";
-  import { onMount } from "svelte";
+  import { onAuthSock, onPubSock } from "$lib/socket/socket";
+  import type { Socket } from "socket.io-client";
+  import { onDestroy, onMount } from "svelte";
   
   let currentGames: any[] = [];
 
@@ -11,10 +12,13 @@
 
   let jwt: string | null;
 
+  let cleanPubSock: any;
+  let cleanAuthSock: any;
+
   onMount(() => {
     jwt = getCookie("auth");
     if (jwt) {
-      onAuthSock(jwt, () => {
+      cleanAuthSock = onAuthSock(jwt, (authSocket: Socket) => {
 
         authSocket.on("connectionError", (error) => {
           $SnackBar.message = error;
@@ -39,13 +43,22 @@
       $SnackBar.color = "red";
     }
 
-    onPubSock(() => {
+    cleanPubSock = onPubSock((pubSocket: Socket) => {
       pubSocket.emit("subscribeQueue");
 
       pubSocket.on("queueUpdate", (queue) => {
         gameQueue = queue;
       });
     });
+  });
+
+  onDestroy(() => {
+    if (cleanAuthSock) {
+      cleanAuthSock();
+    }
+    if (cleanPubSock) {
+      cleanPubSock();
+    }
   });
 
   async function joinQueue() {

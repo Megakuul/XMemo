@@ -45,6 +45,10 @@ export const setupAuthSocket = async (io: Server, secret: string | undefined) =>
         );
       });
 
+      socket.once("disconnect", () => {
+        socket.removeAllListeners("subscribeCurrentGames");
+      });
+
     } catch (err: any) {
       socket.emit("connectionError", "Invalid token" + err.message);
       socket.disconnect(true);

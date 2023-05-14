@@ -2,21 +2,31 @@ import { Game } from "../models/game.js";
 import { User } from "../models/user.js";
 /**
  * Creates a Game
- * @param p1_id ID of player 1
- * @param p2_id ID of player 2
+ * @param player1.id ID of player 1
+ * @param player2.id ID of player 2
  * @param p1_username Username of player 1
  * @param p2_username Username of player 2
  * @param pairs Number of pairs to create
  * @returns Promise containing errors if it threw any
  */
-export const createGame = async (p1_id, p2_id, p1_username, p2_username, pairs) => {
+export const createGame = async (p1, p2, pairs) => {
     try {
+        const player1 = {
+            id: p1.user_id,
+            username: p1.username,
+            title: p1.title,
+            ranking: p1.ranking
+        };
+        const player2 = {
+            id: p2.user_id,
+            username: p2.username,
+            title: p2.title,
+            ranking: p2.ranking
+        };
         const game = new Game({
-            p1_id: p1_id,
-            p2_id: p2_id,
-            p1_username: p1_username,
-            p2_username: p2_username,
-            active_id: p1_id,
+            player1: player1,
+            player2: player2,
+            active_id: player1.id,
             game_stage: 1,
             moves: 0,
             cards: generateCards(pairs)
@@ -125,7 +135,7 @@ const handleStage1 = async (game) => {
  */
 const handleStage2 = async (game, enemy_id, changedCard) => {
     let foundMatch = false;
-    let foundWinner = true;
+    let foundWinner = false;
     // Iterate over the cards of the game
     for (let i = 0; i < game.cards.length; i++) {
         // Check for a match
@@ -133,10 +143,11 @@ const handleStage2 = async (game, enemy_id, changedCard) => {
             captureMatchedCards(game, [changedCard, game.cards[i]]);
             foundMatch = true;
         }
-        // Check if a cards is not captured
-        if (!game.cards[i].captured) {
-            foundWinner = false;
-        }
+    }
+    // Check if a cards is not captured
+    const hasUncapturedCards = game.cards.some(card => card.captured === false);
+    if (!hasUncapturedCards) {
+        foundWinner = true;
     }
     // If a winner is found
     if (foundWinner) {
@@ -178,7 +189,7 @@ const handleGameOver = async (game) => {
     }
     else {
         await calculateRankingAndIncrement(countresult.winner_id, countresult.loser_id);
-        game.winner_username = countresult.winner_id === game.p1_id ? game.p1_username : game.p2_username;
+        game.winner_username = countresult.winner_id === game.player1.id ? game.player1.username : game.player2.username;
     }
     game.game_stage = -1;
     game.active_id = "";
@@ -195,16 +206,16 @@ const countCards = (game) => {
     let p1_count = 0;
     let p2_count = 0;
     for (let i = 0; i < game.cards.length; i++) {
-        if (game.cards[i].owner_id === game.p1_id) {
+        if (game.cards[i].owner_id === game.player1.id) {
             p1_count++;
         }
-        else if (game.cards[i].owner_id === game.p2_id) {
+        else if (game.cards[i].owner_id === game.player2.id) {
             p2_count++;
         }
     }
     const result = {
-        winner_id: p1_count > p2_count ? game.p1_id : game.p2_id,
-        loser_id: p1_count > p2_count ? game.p2_id : game.p1_id,
+        winner_id: p1_count > p2_count ? game.player1.id : game.player2.id,
+        loser_id: p1_count > p2_count ? game.player2.id : game.player1.id,
         draw: p2_count == p1_count ? true : false,
         winner_count: p1_count > p2_count ? p1_count : p2_count,
         loser_count: p1_count > p2_count ? p2_count : p1_count

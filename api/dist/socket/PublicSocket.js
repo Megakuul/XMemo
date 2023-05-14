@@ -1,7 +1,7 @@
 import { GameQueue } from "../models/queue.js";
 import { User } from "../models/user.js";
 import { handleGameUpdate, useDatabaseTrigger } from "./PublicSocket.handler.js";
-import { emitSeveral, removeDisconnectedSockets, removeFromList } from "./PublicSocket.helper.js";
+import { emitSeveral, removeDisconnectedSockets } from "./PublicSocket.helper.js";
 /**
  * Initializes the Public Socket
  *
@@ -40,28 +40,23 @@ export const setupPublicSocket = async (io) => {
         }
     });
     io.on("connection", (socket) => {
-        socket.on("subscribeGame", async (gameId) => {
-            await handleGameUpdate(socket, gameId, "gameUpdate", "gameUpdateError", "unsubscribeGame");
+        socket.once("subscribeGame", async (gameId) => {
+            await handleGameUpdate(socket, gameId, "gameUpdate", "gameUpdateError");
         });
-        socket.on("subscribeQueue", async () => {
+        socket.once("subscribeQueue", async () => {
             socket.emit("queueUpdate", Queue);
             if (!queueSubscribers.includes(socket)) {
                 queueSubscribers.push(socket);
             }
         });
-        socket.on("unsubscribeQueue", async () => {
-            removeFromList(socket, queueSubscribers);
-        });
-        socket.on("subscribeLeaderboard", async () => {
+        socket.once("subscribeLeaderboard", async () => {
             socket.emit("leaderboardUpdate", LeaderBoard);
             if (!leaderboardSubscribers.includes(socket)) {
                 leaderboardSubscribers.push(socket);
             }
         });
-        socket.on("unsubscribeLeaderboard", async () => {
-            removeFromList(socket, leaderboardSubscribers);
-        });
     });
+    // TODO: Maybe just remove it from the list in the on "disconnect" function instead with the intervall
     removeDisconnectedSockets([
         queueSubscribers,
         leaderboardSubscribers
