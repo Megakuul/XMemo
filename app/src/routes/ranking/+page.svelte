@@ -3,6 +3,7 @@
   import type { Socket } from "socket.io-client";
   import LeaderboardItem from "./leaderboardItem.svelte";
   import { onDestroy, onMount } from "svelte";
+    import LoadingIcon from "$lib/components/LoadingIcon.svelte";
 
   let cleanPubSock: any;
 
@@ -30,9 +31,8 @@
   let Leaderboard: any;
 </script>
 
-<h1 class="title">Ranking Leaderboard</h1>
-
 {#if Leaderboard}
+  <h1 class="title">Ranking Leaderboard</h1>
   {#each Leaderboard as item, index}
     <LeaderboardItem placement="{index+1}." username="{item.username}" ranking="{item.ranking}"/>
   {/each}
@@ -40,5 +40,5 @@
   <h1 class="err-title">Error 404</h1>
   <p class="err-msg">{errormsg}</p>
 {:else}
-  <p class="loading-msg">Loading...</p>
+  <LoadingIcon />
 {/if}

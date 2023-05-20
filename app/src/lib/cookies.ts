@@ -22,3 +22,7 @@ export function getCookie(name: string) {
   }
   return null;
 }
+
+export function deleteCookie(name: string) {
+  document.cookie = name + '=; Max-Age=-99999999;';
+};

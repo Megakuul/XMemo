@@ -9,6 +9,7 @@
     import Card from "./card.svelte";
     import { fade } from "svelte/transition";
     import type { Socket } from "socket.io-client";
+    import LoadingIcon from "$lib/components/LoadingIcon.svelte";
 
   // Read Gameid from URL Parameter
   const gameid = $page.url.searchParams.get('gameid');
@@ -126,7 +127,7 @@
   <h1 class="err-title">Error 404</h1>
   <p class="err-msg">{errormsg}</p>
 {:else}
-  <p class="loading-msg">Loading...</p>
+  <LoadingIcon />
 {/if}
 
 <style>
