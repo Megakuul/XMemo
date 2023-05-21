@@ -69,6 +69,19 @@
       $SnackBar.color = "red";
     } 
   }
+
+  function getRankUpdateColor(rankingUpdate: number) {
+    if (rankingUpdate > 80) {
+      return "rgb(240,230,140)";
+    } else if (rankingUpdate > 0) {
+      return "rgb(0,128,0,1)";
+    } else if (rankingUpdate < 0) {
+      return "rgb(255,0,0,1)";
+    } else {
+      // Fallback
+      return "white";
+    }
+  }
 </script>
 
 
@@ -111,14 +124,22 @@
         <hr>
         <p>Cards: {board.cards.filter(card => card.owner_id === board.player1.id).length}</p>
         <p>Title: {board.player1.title}</p>
-        <p>Ranking: {board.player1.ranking}</p>
+        <p>Ranking: {board.player1.ranking}
+        {#if board.player1.rankupdate}
+          <span style="color: {getRankUpdateColor(board.player1.rankupdate)};">{board.player1.rankupdate}</span>
+        {/if}
+        </p>
       </div>
       <div class="player-bx">
         <p>{board.player2.username}</p>
         <hr>
         <p>Cards: {board.cards.filter(card => card.owner_id === board.player2.id).length}</p>
         <p>Title: {board.player2.title}</p>
-        <p>Ranking: {board.player2.ranking}</p>
+        <p>Ranking: {board.player2.ranking}
+        {#if board.player2.rankupdate}
+          <span style="color: {getRankUpdateColor(board.player2.rankupdate)};">{board.player2.rankupdate}</span>
+        {/if}
+        </p>
       </div>
     </div>
   </div>
@@ -267,6 +288,12 @@
     overflow: hidden;
 
     font-size: larger;
+  }
+
+  .main-table .player-table .player-bx span {
+    display: inline-block;
+    scale: 0.9;
+    transform: translateY(-7px);
   }
 
   .main-table .player-table .player-bx p {

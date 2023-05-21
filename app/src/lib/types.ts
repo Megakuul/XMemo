@@ -12,6 +12,7 @@ export interface IPlayer {
   username: string;
   title: string;
   ranking: number;
+  rankupdate: number;
 }
 
 export interface IGame {

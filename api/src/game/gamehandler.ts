@@ -217,10 +217,20 @@ const handleGameOver = async (game: IGame): Promise<void> => {
   if (countresult.draw) {
     game.draw = true;
   } else {
-    await calculateRankingAndIncrement(countresult.winner_id, countresult.loser_id);
-    game.winner_username = countresult.winner_id===game.player1.id ? game.player1.username : game.player2.username;
+    game.winner_username = countresult.winner.username;
   }
+  let rankUpdates = await calculateRankingAndIncrement(countresult.winner, countresult.loser, countresult.draw);
   
+  // Append ranking update 
+  // (this is here so that it can be displayed without making a additional Database request)
+  if (game.player1.id == rankUpdates.p1_id && game.player2.id == rankUpdates.p2_id) {
+    game.player1.rankupdate = rankUpdates.p1_update;
+    game.player2.rankupdate = rankUpdates.p2_update;
+  } else if (game.player1.id == rankUpdates.p2_id && game.player2.id == rankUpdates.p1_id) {
+    game.player1.rankupdate = rankUpdates.p2_update;
+    game.player2.rankupdate = rankUpdates.p1_update;
+  }
+
   game.game_stage = -1;
 
   game.active_id = "";
@@ -228,8 +238,8 @@ const handleGameOver = async (game: IGame): Promise<void> => {
 
 
 interface CountResult {
-  winner_id: string;
-  loser_id: string;
+  winner: IPlayer;
+  loser: IPlayer;
   draw: boolean;
 
   winner_count: number;
@@ -256,9 +266,11 @@ const countCards = (game: IGame): CountResult => {
     }
   }
 
+  // If it is a draw it still randomly assigns a winner and a loser
+  // This is required to calculate the Elo on a draw
   const result: CountResult = {
-    winner_id: p1_count > p2_count ? game.player1.id : game.player2.id,
-    loser_id: p1_count > p2_count ? game.player2.id : game.player1.id,
+    winner: p1_count > p2_count ? game.player1 : game.player2,
+    loser: p1_count > p2_count ? game.player2 : game.player1,
     draw:  p2_count == p1_count ? true : false,
 
     winner_count: p1_count > p2_count ? p1_count : p2_count,
@@ -267,26 +279,51 @@ const countCards = (game: IGame): CountResult => {
   return result;
 }
 
+const maxEloScore = 50;
+const winnerScore = 1;
+const drawScore = 0.5;
+const loserScore = 0;
 /**
  * Calculates the Ranking and write it to the database
  * 
  * sideeffects:
  * This function will not influence another variable, but it will influence the database collection "Users"
+ * 
+ * 
+ * This function uses a Algorithm to calculate the ranking update for each player
  * @param winner_id id of the winner
  * @param loser_id id of the loser
  */
-const calculateRankingAndIncrement = async (winner_id: string, loser_id: string): Promise<void> => {
-  //TODO eventually implement a ranking algorithmus right here
+const calculateRankingAndIncrement = async (winner: IPlayer, loser: IPlayer, draw: boolean): 
+  Promise<{ p1_id: string, p2_id: string, p1_update: number, p2_update: number }> => {
+  
+  // These variables calculate the expected result based on probability and the ranking
+  let tmpWinner_expected: number = 1 / (1+ Math.pow(10, ((loser.ranking - winner.ranking) / 400)));
+  let tmpLoser_expected: number = 1 - tmpWinner_expected;
 
-  await User.findByIdAndUpdate(winner_id, {
+  // These variables calculate the ranking update for the players based on the Elo ranking system
+  let tmpWinner_rank: number = Math.round(maxEloScore * ((draw ? drawScore : winnerScore) - tmpWinner_expected));
+  let tmpLoser_rank: number = Math.round(maxEloScore * ((draw ? drawScore : loserScore) - tmpLoser_expected));
+
+  await User.findByIdAndUpdate(winner.id, {
     $inc: {
-      ranking: 10
+      ranking: tmpWinner_rank
     }
   });
 
-  await User.findByIdAndUpdate(loser_id, {
+  await User.findByIdAndUpdate(loser.id, {
     $inc: {
-      ranking: -10
+      ranking: tmpLoser_rank
     }
   });
+
+  // For the return it does not matter which player is the winner
+  // this only matters to calculate the elo
+  // This return converts "winner" and "loser" back to player1 and 2
+  return { 
+    p1_id: winner.id,
+    p2_id: loser.id,
+    p1_update: tmpWinner_rank,
+    p2_update: tmpLoser_rank,
+  };
 }

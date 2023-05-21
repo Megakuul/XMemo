@@ -14,6 +14,7 @@ export interface IPlayer {
   username: string;
   title: string;
   ranking: number;
+  rankupdate: number;
 }
 
 export interface IGame extends Document {
@@ -41,7 +42,8 @@ const PlayerSchema: Schema = new Schema<IPlayer>({
   id: { type: String, required: true },
   username: { type: String, required: true },
   title: { type: String, required: true },
-  ranking: { type: Number, required: true }
+  ranking: { type: Number, required: true },
+  rankupdate: { type: Number, required: false }
 })
 
 const GameSchema: Schema = new Schema<IGame>({

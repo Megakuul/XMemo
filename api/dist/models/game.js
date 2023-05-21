@@ -11,7 +11,8 @@ const PlayerSchema = new Schema({
     id: { type: String, required: true },
     username: { type: String, required: true },
     title: { type: String, required: true },
-    ranking: { type: Number, required: true }
+    ranking: { type: Number, required: true },
+    rankupdate: { type: Number, required: false }
 });
 const GameSchema = new Schema({
     player1: { type: PlayerSchema, required: true },
