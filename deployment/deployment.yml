@@ -1,0 +1,68 @@
+# Create Traefik Loadbalancer
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik
+  namespace: xmemo-plattform
+  annotations:
+    metallb.universe.tf/address-pool: xmemo-pool
+spec:
+  selector:
+    app: traefik
+  ports:
+    - protocol: TCP
+      port: 80
+      name: web
+      targetPort: 80
+    - protocol: TCP
+      port: 443
+      name: websecure
+      targetPort: 443
+  type: LoadBalancer
+---
+# Create Traefik IngressRoute
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: nginx-ingress
+  namespace: xmemo-plattform
+spec:
+  entryPoints:
+    - websecure
+  routes:
+  - match: Host(`test.megakuul.ch`) && PathPrefix(`/`)
+    kind: Rule
+    services:
+    - name: nginx
+      port: 80
+  tls:
+    certResolver: myresolver
+    domains:
+    - main: test.megakuul.ch
+---
+# Create actual Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: xmemo-plattform
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 3
+  template:
+    metadata:
+      namespace: xmemo-plattform
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80

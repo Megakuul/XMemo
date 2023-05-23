@@ -1,0 +1,37 @@
+# Create Traefik Service (Ingress Controller)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traefik-ingress-controller
+  namespace: xmemo-plattform
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: traefik
+  template:
+    metadata:
+      labels:
+        app: traefik
+    spec:
+      containers:
+      - name: traefik
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        image: traefik:v2.5
+        ports:
+        - name: http
+          containerPort: 80
+        - name: https
+          containerPort: 443
+        args:
+        - --api.insecure
+        - --providers.kubernetescrd
+        - --entrypoints.web.Address=:80
+        - --entrypoints.websecure.Address=:443
+        - --certificatesresolvers.myresolver.acme.httpchallenge=true
+        - --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web
+        - --certificatesresolvers.myresolver.acme.email=megakuul@gmx.ch
+        - --certificatesresolvers.myresolver.acme.storage=acme.json
