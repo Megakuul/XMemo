@@ -1,3 +1,74 @@
+# Create Traefik Service Account
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: traefik-serviceaccount
+  namespace: xmemo-plattform
+---
+# Create RBAC Role
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: traefik-clusterrole
+rules:
+  - apiGroups:
+      - "traefik.containo.us"
+    resources:
+      - services
+      - endpoints
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+      - networking.k8s.io
+    resources:
+      - ingresses
+      - ingressclasses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+      - networking.k8s.io       
+    resources:
+      - ingresses/status
+    verbs:
+      - update
+  - apiGroups:
+      - traefik.containo.us
+    resources:
+      - middleware
+      - middlewaretcps
+      - ingressroutes
+      - traefikservices
+      - ingressroutetcps
+      - ingressrouteudps
+      - tlsoptions
+      - tlsstores
+      - serverstransports
+    verbs:
+      - get
+      - list
+      - watch
+---
+# ClusterRoleBinding for Traefik
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: traefik-clusterrolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: traefik-clusterrole
+subjects:
+  - kind: ServiceAccount
+    name: traefik-serviceaccount
+    namespace: xmemo-plattform
+---
 # Create Traefik Service (Ingress Controller)
 apiVersion: apps/v1
 kind: Deployment
@@ -5,7 +76,7 @@ metadata:
   name: traefik-ingress-controller
   namespace: xmemo-plattform
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: traefik
@@ -14,6 +85,7 @@ spec:
       labels:
         app: traefik
     spec:
+      serviceAccountName: traefik-serviceaccount
       containers:
       - name: traefik
         resources:
@@ -31,7 +103,3 @@ spec:
         - --providers.kubernetescrd
         - --entrypoints.web.Address=:80
         - --entrypoints.websecure.Address=:443
-        - --certificatesresolvers.myresolver.acme.httpchallenge=true
-        - --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web
-        - --certificatesresolvers.myresolver.acme.email=megakuul@gmx.ch
-        - --certificatesresolvers.myresolver.acme.storage=acme.json
