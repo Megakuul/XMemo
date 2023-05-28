@@ -1,40 +1,19 @@
 <script lang="ts">
   import Intersecting from "$lib/components/Intersecting.svelte";
+  import { getRankingColor } from "$lib/components/rankingcolor";
 
   export let placement: any;
   export let username: any;
   export let ranking: any;
 
-  function getPlacementColor(placement: number): any {
-    switch (Number(placement)) {
-      case 1:
-        return "rgb(240,230,140)";
-      case 2:
-        return "rgb(192,192,192)";
-      case 3:
-        return "rgb(205,127,50)";
-      default:
-        return "white"
-    }
-  }
-
-  function getRankingColor(ranking: number): any {
-    if (ranking > 2000) {
-      return "rgb(240,230,140)";
-    } else if (ranking > 500) {
-      return "rgb(0,128,0,1)";
-    } else if (ranking > 0) {
-      return "rgb(255,255,255,0.7)";
-    } else {
-      return "rgb(255,0,0,0.5)";
-    }
-  }
+  const Gold: boolean = placement==1;
+  const Silver: boolean = placement==2;
+  const Bronce: boolean = placement==3;
 </script>
 
 <Intersecting styleOnDefault="scale: 0.8; opacity: 0.7;" styleOnIntersect="scale: 1; opacity: 1;" transition="all ease 1s">
-  <div class="item-container">
-    <div class="placement-bx" 
-      style="color: {getPlacementColor(placement)};">
+  <div class="item-container" class:Gold class:Silver class:Bronce>
+    <div class="placement-bx">
       {placement}
     </div>
     <div class="username-bx">
@@ -52,7 +31,8 @@
     display: flex;
     align-items: center;
     flex-direction: row;
-    margin: 30px;
+    margin: 20px;
+    padding: 12px;
 
     font-size: 40px;
     height: 1.5em;
@@ -61,10 +41,92 @@
     overflow: hidden;
     white-space: nowrap;
 
-    background-color: rgb(255, 255, 255, 0.2);
-    border-radius: 20px;
-    border: solid white 1px;
+    background-color: rgb(255, 255, 255, 0.1);
+    border-radius: 8px;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px 0px;
+  }
+
+  .Gold,
+  .Silver,
+  .Bronce {
+    height: 2.2em;
+    margin: 30px;
+    background-color:black;
+  }
+
+  .Gold {
+    animation: goldFlame 1s ease-in-out infinite
+  }
+
+  .Silver {
+    animation: silverFlame .8s ease-in-out infinite
+  }
+
+  .Bronce {
+    animation: bronceFlame 1.2s ease-in-out infinite
+  }
+
+	@keyframes goldFlame {
+    0%, 100% {
+      box-shadow: 0 0 3.07px #ffd700,
+      1.54px -1.54px 6.15px #ffd700,
+      -3.07px -3.07px 7.69px #ffcc00,
+      3.07px -6.15px 9.23px #ffbd00,
+      -3.07px -9.23px 12.31px #ffae00,
+      0 -12.31px 13.85px #ff9e00,
+      1.54px -15.38px 15.38px #ff8e00;
+    }
+    60% {
+      box-shadow: 0 0 3.07px #ffd700,
+      1.54px -1.54px 6.15px #ffd700,
+      -3.07px -3.07px 7.69px #ffcc00,
+      3.85px -7.69px 12.31px #ffbd00,
+      -3.85px -10.77px 10.77px #ffae00,
+      0 -13.85px 15.38px #ff9e00,
+      1.54px -15.38px 15.38px  #ff8e00;
+    }
+  }
+
+  @keyframes silverFlame {
+    0%, 100% {
+      box-shadow: 0 0 3.07px #c0c0c0,
+      1.54px -1.54px 6.15px #b3b3b3,
+      -3.07px -3.07px 7.69px #a6a6a6,
+      3.07px -6.15px 9.23px #999999,
+      -3.07px -9.23px 12.31px #8c8c8c,
+      0 -12.31px 13.85px #7f7f7f,
+      1.54px -15.38px 15.38px #727272;
+    }
+    30% {
+      box-shadow: 0 0 3.07px #c0c0c0,
+      1.54px -1.54px 6.15px #b3b3b3,
+      -3.07px -3.07px 7.69px #a6a6a6,
+      3.85px -7.69px 12.31px #999999,
+      -3.85px -10.77px 10.77px #8c8c8c,
+      0 -13.85px 15.38px #7f7f7f,
+      1.54px -15.38px 15.38px  #727272;
+    }
+  }
+
+  @keyframes bronceFlame {
+    0%, 100% {
+      box-shadow: 0 0 3.07px #cd7f32,
+      1.54px -1.54px 6.15px #b87333,
+      -3.07px -3.07px 7.69px #a06734,
+      3.07px -6.15px 9.23px #895b35,
+      -3.07px -9.23px 12.31px #724f36,
+      0 -12.31px 13.85px #5b4337,
+      1.54px -15.38px 15.38px #443738;
+    }
+    40% {
+      box-shadow: 0 0 3.07px #cd7f32,
+      1.54px -1.54px 6.15px #b87333,
+      -3.07px -3.07px 7.69px #a06734,
+      3.85px -7.69px 12.31px #895b35,
+      -3.85px -10.77px 10.77px #724f36,
+      0 -13.85px 15.38px #5b4337,
+      1.54px -15.38px 15.38px  #443738;
+    }
   }
 
   .item-container .placement-bx {
@@ -88,7 +150,7 @@
 
   @media screen and (max-width: 600px) {
     .item-container {
-      font-size: 20px;
+      font-size: 15px;
       margin: 20px;
     }
   }

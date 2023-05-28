@@ -16,6 +16,7 @@ export interface IPlayer {
 }
 
 export interface IGame {
+  _id: any;
   player1: IPlayer;
   player2: IPlayer;
   winner_username: string;
@@ -23,6 +24,7 @@ export interface IGame {
   active_id: string;
   game_stage: number;
   moves: number;
+  created: Date;
 
   cards: ICard[];
 }
@@ -30,4 +32,6 @@ export interface IGame {
 export interface IGameQueue extends Document {
   user_id: string;
   username: string;
+  ranking: number;
+  title: string;
 }

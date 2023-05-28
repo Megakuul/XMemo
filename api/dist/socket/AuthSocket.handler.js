@@ -1,4 +1,5 @@
 import { Game } from "../models/game.js";
+import { formatGameboard } from "./PublicSocket.handler.js";
 /**
  * Sends Current Games to the user
  *
@@ -30,20 +31,25 @@ export const handleCurrentGameUpdate = async (socket, userid, successStream, err
                 { "player1.id": userid },
                 { "player2.id": userid }
             ]
-        });
+        })
+            // Sort the Documents by created attribute
+            .sort({ created: -1 })
+            // Limit the Documents by 30
+            .limit(30);
         if (!games) {
             socket.emit(errorStream, `No Games found`);
             return;
         }
         // Load initial Games
         games.forEach((game) => {
-            socket.emit(successStream, game);
+            socket.emit(successStream, formatGameboard(game));
         });
         // Retrieve live datastream from the database
         const gamesStream = Game.watch(watchPipe);
         // Fire a gameupdate when the data changes
         gamesStream.on("change", async (change) => {
-            socket.emit(successStream, change.fullDocument);
+            const { cards, ...gameWithoutCards } = change.fullDocument;
+            socket.emit(successStream, formatGameboard(gameWithoutCards));
         });
         // Close live datastream on unsubscribe
         socket.on(unsubscribeStream, () => {

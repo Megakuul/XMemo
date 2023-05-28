@@ -1,8 +1,8 @@
 <script lang="ts">
   import { writable, derived } from 'svelte/store';
-  import RandomIcon from "$lib/components/RandomIcon.svelte";
+  import RandomIcon from "$lib/components/randomicon.svelte";
   import type { ICard } from "$lib/types";
-  import AnimatedIcon from '$lib/components/AnimatedIcon.svelte';
+  import AnimatedIcon from '$lib/components/animatedicon.svelte';
 
   export let card: ICard;
   export let move: any;

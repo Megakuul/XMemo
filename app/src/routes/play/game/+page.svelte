@@ -299,6 +299,7 @@
   .main-table .player-table .player-bx p {
     letter-spacing: 3px;
     font-weight: 900;
+    text-align: start;
   }
 
   @media screen and (max-width: 750px) {

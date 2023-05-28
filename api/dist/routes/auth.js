@@ -35,7 +35,7 @@ AuthRouter.post('/register', async (req, res) => {
             password: password,
             description: description,
             title: basetitle,
-            ranking: 0
+            ranking: 200
         });
         await user.save();
         res.status(201).json({ message: "User registered successfully" });

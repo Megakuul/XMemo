@@ -1,7 +1,7 @@
 <script lang="ts">
   import { ChangeUser, GetProfile, type IProfile } from "$lib/adapter/auth";
-  import AnimatedIcon from "$lib/components/AnimatedIcon.svelte";
-    import LoadingIcon from "$lib/components/LoadingIcon.svelte";
+  import LoadingIcon from "$lib/components/LoadingIcon.svelte";
+    import { getRankingColor } from "$lib/components/rankingcolor";
   import { SnackBar } from "$lib/components/snackbar.store";
   import { deleteCookie, getCookie } from "$lib/cookies";
   import { onMount } from "svelte";
@@ -23,6 +23,11 @@
   async function editprofile() {
     try {
       if (Profile) {
+        if (Profile.username=="") {
+          $SnackBar.message = "Enter a username";
+          $SnackBar.color = "red";
+          return;
+        }
         await ChangeUser(getCookie("auth"), Profile!.username, Profile.description || "");
 
         $SnackBar.message = "Saved changes to userprofile";
@@ -47,20 +52,30 @@
 {:else if Profile}
   <h1 class="title">Profile</h1>
   <div class="profile-container">
-    <input bind:value="{Profile.username}">
-    <div>{Profile.email}</div>
-    <input bind:value="{Profile.description}">
-    <div>{Profile.title}</div>
-    <div>{Profile.ranking}</div>
-    <a href="/profile/editpassword">
-      Change Password
-    </a>
-    <button on:click={editprofile}>
-      Save Changes
-    </button>
-    <button on:click={logout}>
-      Logout
-    </button>
+    <div class="profile">
+      <p>{Profile.email}</p>
+      <input class="inputbx username" placeholder="Username" bind:value="{Profile.username}">
+      <textarea class="inputbx description" placeholder="Description" bind:value="{Profile.description}" />
+    </div>
+    <div class="information">
+      <div class="stats">
+        <div class="ranking" 
+        style="color: {getRankingColor(Number(Profile.ranking))};">
+        {Profile.ranking}</div>
+        <div class="rank-title">{Profile.title}</div>
+      </div>
+      <div class="options">
+        <button on:click={() => window.location.href=`/profile/editpassword`}>
+          Change Password
+        </button>
+        <button on:click={editprofile}>
+          Save Changes
+        </button>
+        <button on:click={logout}>
+          Logout
+        </button>
+      </div>
+    </div>
   </div>
 {:else}
   <h2 class="title" style="margin-bottom: 10vh">Oops! You're not signed in yet.</h2>
@@ -78,19 +93,115 @@
 <style>
   .profile-container {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    align-self: center;
+    flex-direction: row;
+    width: 95%;
+    height: 400px;
+    justify-content: space-between;
   }
 
-  .profile-container input {
-    display: block;
+  .profile-container .information,
+  .profile-container .profile {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .profile-container .profile {
+    width: 55%;
+    background-color: rgb(255, 255, 255, 0.05);
+    border-radius: 12px;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px 0px;
+  }
+
+  .profile .username {
+    height: 100px;
+    font-size: 2rem;
+    text-align: center;
+  }
+
+  .profile .description {
+    height: 100%;
+    text-align: start;
+    resize: none;
+    font-size: 1rem;
+  }
+
+  .profile .inputbx {
+    margin: 20px;
+    padding: 5px;
+
     border: none;
     font: 'Raleway', sans-serif;
-    font-size: 2rem;
-    background-color: transparent;
-    text-align: center;
-    color: white;
     overflow: hidden;
+
+    background-color: transparent;
+    color: white;
+    border-radius: 8px;
+  }
+
+  .profile .inputbx:focus {
+    outline: none;
+    box-shadow: 0.2rem 0.8rem 1.6rem rgb(0, 0, 0, 0.5);
+  }
+
+
+  .profile-container .information {
+    justify-content: space-between;
+    width: 40%;
+  }
+
+  .profile-container .information .stats,
+  .profile-container .information .options {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 45%;
+    background-color: rgb(255, 255, 255, 0.05);
+    border-radius: 12px;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px 0px;
+  }
+
+  .profile-container .information .stats {
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+  }
+
+  .information .stats .ranking {
+    font-size: 3rem;
+  }
+
+  .information .stats .rank-title {
+    font-size: 1.5rem;
+  }
+
+  .profile-container .information .options {
+    justify-content: space-around;
+  }
+
+  .information .options button {
+    font-size: 1.2rem;
+    margin: 0 15px 0 15px;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+
+    color: white;
+    background-color: rgb(0, 0, 0, 0.3);
+    cursor: pointer;
+    overflow: hidden;
+    
+    transition: all ease .5s;
+  }
+  .information .options button:hover {
+    background-color: rgb(0, 0, 0, 0.2);
+    color:rgb(255, 255, 255, 0.6);
+  }
+
+  @media screen and (max-width: 600px) {
+    .information .options button {
+      font-size: 0.6rem;
+    }
   }
 
   .noprofile-container {
@@ -142,45 +253,5 @@
       height: 120px;
       font-size: 3rem;
     }
-  }
-
-  .main-form input{
-    display: block;
-    border: none;
-    font: 'Raleway', sans-serif;
-    font-size: 2rem;
-
-    background-color: rgba(255,255,255,0.07);
-    color: white;
-
-    height: 50px;
-    padding: 10px;
-    margin: 15px;
-    border-radius: 8px;
-
-    transition: all ease .5s;
-  }
-  .main-form input:focus {
-    outline: none;
-    box-shadow: 0.2rem 0.8rem 1.6rem rgb(0, 0, 0, 0.5);
-  }
-  .main-form button {
-    height: 50px;
-    font-size: 1.8rem;
-    padding: 10px;
-    margin: 15px;
-    border-radius: 8px;
-    border: none;
-
-    color: white;
-    background-color: rgb(0, 0, 0, 0.3);
-    cursor: pointer;
-    overflow: hidden;
-    
-    transition: all ease .5s;
-  }
-  .main-form button:hover {
-    background-color: rgb(0, 0, 0, 0.2);
-    color:rgb(255, 255, 255, 0.6);
   }
 </style>

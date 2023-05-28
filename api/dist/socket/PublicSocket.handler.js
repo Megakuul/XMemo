@@ -84,7 +84,7 @@ export const handleGameUpdate = async (socket, gameId, successStream, errorStrea
  * @param game Game Object
  * @returns Client Side Game Object
  */
-const formatGameboard = (game) => {
+export const formatGameboard = (game) => {
     // This will create a deep copy of the gameCpy Object
     // And will also remove additional Mongoose database information we dont need
     const gameCpy = game.toObject();

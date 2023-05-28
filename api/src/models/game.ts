@@ -25,6 +25,7 @@ export interface IGame extends Document {
   active_id: string;
   game_stage: number;
   moves: number;
+  created: Date;
 
   cards: ICard[];
 }
@@ -54,7 +55,13 @@ const GameSchema: Schema = new Schema<IGame>({
   active_id: { type: String },
   game_stage: { type: Number, required: true },
   moves: { type: Number, required: false },
-  cards: { type: [CardSchema], required: true }
+  cards: { type: [CardSchema], required: true },
+  created: { type: Date, default: Date.now }
 })
+
+// Create indexes
+GameSchema.index({ "player1.id": 1 });
+GameSchema.index({ "player2.id": 1 });
+GameSchema.index({ created: -1 });
 
 export const Game = model<IGame>('Game', GameSchema);

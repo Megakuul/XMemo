@@ -1,5 +1,6 @@
 import { Socket } from "socket.io";
 import { Game } from "../models/game.js";
+import { formatGameboard } from "./PublicSocket.handler.js";
 
 
 /**
@@ -41,7 +42,11 @@ export const handleCurrentGameUpdate = async (
         { "player1.id": userid },
         { "player2.id": userid }
       ]
-    });
+    })
+    // Sort the Documents by created attribute
+    .sort({ created: -1 })
+    // Limit the Documents by 30
+    .limit(30);
     if (!games) {
       socket.emit(errorStream, `No Games found`);
       return;
@@ -49,7 +54,7 @@ export const handleCurrentGameUpdate = async (
 
     // Load initial Games
     games.forEach((game: any) => {
-      socket.emit(successStream, game);
+      socket.emit(successStream, formatGameboard(game));
     });
 
     // Retrieve live datastream from the database
@@ -57,7 +62,8 @@ export const handleCurrentGameUpdate = async (
 
     // Fire a gameupdate when the data changes
     gamesStream.on("change", async (change: any) => {
-      socket.emit(successStream, change.fullDocument);
+      const { cards, ...gameWithoutCards } = change.fullDocument;
+      socket.emit(successStream, formatGameboard(gameWithoutCards));
     });
 
     // Close live datastream on unsubscribe
@@ -69,3 +75,4 @@ export const handleCurrentGameUpdate = async (
     socket.emit(errorStream, err.message);
   }
 }
+
