@@ -121,7 +121,7 @@
 
   .profile .description {
     height: 100%;
-    text-align: start;
+    text-align: center;
     resize: none;
     font-size: 1rem;
   }
