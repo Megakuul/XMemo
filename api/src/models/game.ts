@@ -62,6 +62,6 @@ const GameSchema: Schema = new Schema<IGame>({
 // Create indexes
 GameSchema.index({ "player1.id": 1 });
 GameSchema.index({ "player2.id": 1 });
-GameSchema.index({ created: -1 });
+GameSchema.index({ created: 1 });
 
 export const Game = model<IGame>('Game', GameSchema);

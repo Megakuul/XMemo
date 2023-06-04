@@ -85,9 +85,15 @@ export const handleGameUpdate = async (socket, gameId, successStream, errorStrea
  * @returns Client Side Game Object
  */
 export const formatGameboard = (game) => {
-    // This will create a deep copy of the gameCpy Object
-    // And will also remove additional Mongoose database information we dont need
-    const gameCpy = game.toObject();
+    let gameCpy;
+    if (typeof game.toObject === "function") {
+        // Mongoose document, use toObject to create a regular Object as deep copy
+        gameCpy = game.toObject();
+    }
+    else {
+        // Not a Mongoose document, create a deep copy
+        gameCpy = JSON.parse(JSON.stringify(game));
+    }
     for (let i = 0; i < Number(gameCpy.cards.length); i++) {
         if (!gameCpy.cards[i].discovered && !gameCpy.cards[i].captured) {
             gameCpy.cards[i].tag = undefined;

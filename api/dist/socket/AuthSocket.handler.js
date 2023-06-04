@@ -33,7 +33,7 @@ export const handleCurrentGameUpdate = async (socket, userid, successStream, err
             ]
         })
             // Sort the Documents by created attribute
-            .sort({ created: -1 })
+            .sort({ created: 1 })
             // Limit the Documents by 30
             .limit(30);
         if (!games) {
@@ -49,7 +49,7 @@ export const handleCurrentGameUpdate = async (socket, userid, successStream, err
         // Fire a gameupdate when the data changes
         gamesStream.on("change", async (change) => {
             const { cards, ...gameWithoutCards } = change.fullDocument;
-            socket.emit(successStream, formatGameboard(gameWithoutCards));
+            socket.emit(successStream, gameWithoutCards);
         });
         // Close live datastream on unsubscribe
         socket.on(unsubscribeStream, () => {

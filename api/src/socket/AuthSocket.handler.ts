@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import { Game } from "../models/game.js";
+import { Game, IGame } from "../models/game.js";
 import { formatGameboard } from "./PublicSocket.handler.js";
 
 
@@ -44,7 +44,7 @@ export const handleCurrentGameUpdate = async (
       ]
     })
     // Sort the Documents by created attribute
-    .sort({ created: -1 })
+    .sort({ created: 1 })
     // Limit the Documents by 30
     .limit(30);
     if (!games) {
@@ -53,7 +53,7 @@ export const handleCurrentGameUpdate = async (
     }
 
     // Load initial Games
-    games.forEach((game: any) => {
+    games.forEach((game: IGame) => {
       socket.emit(successStream, formatGameboard(game));
     });
 
@@ -63,7 +63,7 @@ export const handleCurrentGameUpdate = async (
     // Fire a gameupdate when the data changes
     gamesStream.on("change", async (change: any) => {
       const { cards, ...gameWithoutCards } = change.fullDocument;
-      socket.emit(successStream, formatGameboard(gameWithoutCards));
+      socket.emit(successStream, gameWithoutCards);
     });
 
     // Close live datastream on unsubscribe

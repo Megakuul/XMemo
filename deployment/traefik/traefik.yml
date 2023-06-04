@@ -20,7 +20,7 @@ spec:
       serviceAccountName: traefik-account
       containers:
         - name: traefik
-          image: traefik:v2.10
+          image: traefik:latest
           resources:
             limits:
               memory: "256Mi"
@@ -28,11 +28,39 @@ spec:
           args:
             - --api.insecure
             - --providers.kubernetesingress
+            - --entrypoints.web.address=:80
+            - --entrypoints.web.http.redirections.entrypoint.to=websecure
+            - --entrypoints.web.http.redirections.entrypoint.scheme=https
+            - --entrypoints.websecure.address=:443
+            - --entrypoints.websecure.http.tls
+            - --providers.kubernetescrd
+            - --providers.kubernetescrd.namespaces=xmemo-system
           ports:
             - name: web
               containerPort: 80
+            - name: websecure
+              containerPort: 443
             - name: dashboard
               containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-web-service
+  namespace: xmemo-system
+  annotations:
+    metallb.universe.tf/address-pool: xmemo-pool
+spec:
+  type: LoadBalancer
+  ports:
+    - name: web
+      targetPort: web
+      port: 80
+    - name: websecure
+      targetPort: websecure
+      port: 443
+  selector:
+    app: traefik
 ---
 # Create the Traefik Dashboard Service
 # TODO: Remove this, it is just here to test the application
@@ -49,21 +77,5 @@ spec:
   ports:
     - port: 8080
       targetPort: dashboard
-  selector:
-    app: traefik
----
-# Create the Traefik Service to expose the Controller (the controller will then redirect it to the defined Ingress Route)
-apiVersion: v1
-kind: Service
-metadata:
-  name: traefik-web-service
-  namespace: xmemo-system
-  annotations:
-    metallb.universe.tf/address-pool: xmemo-pool
-spec:
-  type: LoadBalancer
-  ports:
-    - targetPort: web
-      port: 80
   selector:
     app: traefik

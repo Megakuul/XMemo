@@ -1,34 +1,30 @@
-# This File is not working right now
-
-# Create Ingress Route
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
 metadata:
-  name: ingress-router
+  name: ingress-route
   namespace: xmemo-system
 spec:
-  rules:
-  - host: "test.megakuul.ch"
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: nginx 
-            port:
-              number: 80
+  entryPoints:
+    - websecure
+  routes:
+  - kind: Rule
+    match: Host(`test.megakuul.ch`) && PathPrefix(`/`)
+    services:
+    - name: nginx-svc
+      port: 80
+  tls:
+    secretName: certificate-secret
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx
+  name: nginx-svc
   namespace: xmemo-system
 spec:
   selector:
-    app: nginx
+    app: nginx-pod
   ports:
-    - protocol: TCP
+    - name: web
       port: 80
       targetPort: 80
 ---
@@ -36,25 +32,26 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx
+  name: nginx-deployment
   namespace: xmemo-system
 spec:
   selector:
     matchLabels:
-      app: nginx
+      app: nginx-pod
   replicas: 3
   template:
     metadata:
       namespace: xmemo-system
       labels:
-        app: nginx
+        app: nginx-pod
     spec:
       containers:
-      - name: nginx
+      - name: nginx-pod
         resources:
           limits:
             memory: "256Mi"
             cpu: "500m"
         image: nginx:1.14.2
         ports:
-        - containerPort: 80
+        - name: web
+          containerPort: 80

@@ -31,7 +31,7 @@
 
         authSocket.on("currentGamesUpdate", (game) => {
           if (!currentGames.includes(game)) {
-            currentGames = [...currentGames, game];
+            currentGames = [ game, ...currentGames];
           }
         });
 
