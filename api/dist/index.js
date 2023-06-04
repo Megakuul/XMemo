@@ -56,11 +56,11 @@ const server = http.createServer(app);
 // Websocket for realtime data
 const publicSocket = new Server(server, {
     cors: corsOptions,
-    path: "/publicsock"
+    path: "/api/publicsock"
 });
 const authSocket = new Server(server, {
     cors: corsOptions,
-    path: "/authsock"
+    path: "/api/authsock"
 });
 // Initialize Express Middleware
 app.use(cors(corsOptions));
@@ -68,8 +68,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(passport.initialize());
 // Initialize Routes and SocketHandlers
-app.use('/auth', AuthRouter);
-app.use('/play', PlayRouter);
+app.use('/api/auth', AuthRouter);
+app.use('/api/play', PlayRouter);
 setupPublicSocket(publicSocket);
 setupAuthSocket(authSocket, process.env.JWT_SECRET_KEY);
 // Start the HTTP Server

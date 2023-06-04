@@ -1,11 +1,3 @@
-<script lang="ts">
-	import { page } from '$app/stores';
-	import logo from '$lib/images/svelte-logo.svg';
-	import github from '$lib/images/github.svg';
-
-	//$page.url.pathname === '/' ? 'page' : undefined
-</script>
-
 <header>
 	<nav>
 		<a class="nav-block" href="/">

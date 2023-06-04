@@ -1,5 +1,5 @@
 <script lang="ts">
-  import AnimatedIcon from "./animatedicon.svelte";
+  import AnimatedIcon from "./AnimatedIcon.svelte";
 </script>
 
 <div class="loading-icon">

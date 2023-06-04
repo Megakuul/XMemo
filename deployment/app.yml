@@ -1,0 +1,60 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: app-ingress-route
+  namespace: xmemo-system
+spec:
+  entryPoints:
+    - websecure
+  routes:
+  - kind: Rule
+    match: Host(`xmemo.megakuul.ch`) && PathPrefix(`/`)
+    services:
+    - name: app-svc
+      port: 80
+  tls:
+    secretName: certificate-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-svc
+  namespace: xmemo-system
+spec:
+  selector:
+    app: app-pod
+  ports:
+    - name: web
+      port: 80
+      targetPort: 3000
+---
+# Create actual Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+  namespace: xmemo-system
+spec:
+  selector:
+    matchLabels:
+      app: app-pod
+  replicas: 3
+  template:
+    metadata:
+      namespace: xmemo-system
+      labels:
+        app: app-pod
+    spec:
+      containers:
+      - name: app-pod
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        image: megakuul/xmemo-app:latest
+        ports:
+        - name: web
+          containerPort: 3000
+        env:
+        - name: VITE_API_URL
+          value: "https://xmemo.megakuul.ch/api"

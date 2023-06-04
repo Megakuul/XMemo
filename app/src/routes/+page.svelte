@@ -1,5 +1,5 @@
 <script>
-	import AnimatedIcon from '$lib/components/animatedicon.svelte';
+	import AnimatedIcon from '$lib/components/AnimatedIcon.svelte';
 </script>
 
 <svelte:head>

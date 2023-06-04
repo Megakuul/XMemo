@@ -114,10 +114,14 @@ In the provided Manifest there are two ingress routes to route the traffic to th
 
 The traffic gets routed based on the Path Pattern, this is a common practise, because CORS (Cross Origin Resource Sharing) will not block requests to the API.
 
-To deploy it, use following Manifest
+To deploy it, use following Manifests
 
 ```bash
-kubectl apply -f ./deployment.yml
+kubectl apply -f ./api.yml
+```
+
+```bash
+kubectl apply -f ./app.yml
 ```
 
 Make sure that the Domain in the IngressRoute is matching the certificate defined in the certificate-secret
