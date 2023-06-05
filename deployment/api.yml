@@ -64,3 +64,5 @@ spec:
           value: "yourjwtsecret"
         - name: PARTIAL_UPDATE_MODE
           value: "true"
+# The API URL is defined directly in the docker-image, this is because the vite-environment variables need to be initialized during build process
+# The API URL points to https://xmemo.megakuul.ch/api

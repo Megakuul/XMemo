@@ -55,6 +55,5 @@ spec:
         ports:
         - name: web
           containerPort: 3000
-        env:
-        - name: VITE_API_URL
-          value: "https://xmemo.megakuul.ch/api"
+# The API URL is defined directly in the docker-image, this is because the vite-environment variables need to be initialized during build process
+# The API URL points to https://xmemo.megakuul.ch/api

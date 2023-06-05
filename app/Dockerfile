@@ -13,6 +13,10 @@ RUN npm ci
 # Copy the rest of the application code
 COPY . .
 
+# If the App will run on the same domain as the API (what is the default case)
+# you need to specify "/api" here
+ENV VITE_API_URL=/api
+
 RUN npm run build
 
 # Expose the port that the application will listen on
