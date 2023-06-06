@@ -17,7 +17,7 @@ export const GetProfile = async (token: string | null): Promise<IProfile | null>
     return null;
   }
 
-  const resp = await fetch(`${import.meta.env.VITE_API_URL}/auth/profile`, {
+  const resp = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/profile`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -48,7 +48,7 @@ export const GetProfile = async (token: string | null): Promise<IProfile | null>
  * @param password Password
  */
 export const Login = async (username: string, password: string): Promise<any> => {
-  const resp = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+  const resp = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -75,7 +75,7 @@ export const Login = async (username: string, password: string): Promise<any> =>
  * @param password Password
  */
 export const Register = async (username: string, email: string, password: string): Promise<void> => {
-  const resp = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
+  const resp = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -102,7 +102,7 @@ export const Register = async (username: string, email: string, password: string
  * @param newdescription New Description
  */
 export const ChangeUser = async (token: string | null, newusername: string, newdescription: string): Promise<void> => {
-  const resp = await fetch(`${import.meta.env.VITE_API_URL}/auth/editprofile`, {
+  const resp = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/editprofile`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -129,7 +129,7 @@ export const ChangeUser = async (token: string | null, newusername: string, newd
  * @param newpassword New Password
  */
 export const ChangePassword = async (token: string | null, oldpassword: string, newpassword: string): Promise<void> => {
-  const resp = await fetch(`${import.meta.env.VITE_API_URL}/auth/editpassword`, {
+  const resp = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/editpassword`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
