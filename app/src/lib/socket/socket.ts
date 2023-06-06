@@ -34,7 +34,10 @@ import { io, type Socket } from "socket.io-client";
  * @returns cleanup function
  */
 export const onPubSock = (callback: any) => {
-  const pubSocket: Socket = io(import.meta.env.VITE_API_URL, { path: "/api/publicsock" });
+  const pubSocket: Socket = io(import.meta.env.VITE_API_URL, {
+    path: "/api/publicsock",
+    transports: [ "websocket" ]
+  });
   if (pubSocket.connected) {
     callback(pubSocket);
   } else {
@@ -97,7 +100,8 @@ export const onPubSock = (callback: any) => {
 export const onAuthSock = (token: string, callback: any) => {
   const authSocket = io(import.meta.env.VITE_API_URL, { 
     path: "/api/authsock",
-    query: { token }
+    query: { token },
+    transports: [ "websocket" ]
   });
 
   if (authSocket.connected) {
