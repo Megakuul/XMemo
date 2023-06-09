@@ -21,22 +21,16 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
-          API_VERSION=${{ steps.api-semver.outputs.version }}
-          docker buildx build --platform linux/amd64 -t megakuul/xmemo-api:${API_VERSION} -t megakuul/xmemo-api:latest --push ./api
+          cd api
+          API_VERSION=$(jq -r .version package.json)
+          docker buildx build --platform linux/amd64 -t megakuul/xmemo-api:${API_VERSION} -t megakuul/xmemo-api:latest --push .
 
       - name: Build and push Docker image for Frontend
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
-          FRONTEND_VERSION=${{ steps.frontend-semver.outputs.version }}
-          docker buildx build --platform linux/amd64 -t megakuul/xmemo-app:${FRONTEND_VERSION} -t megakuul/xmemo-app:latest --push ./app
-
-      - name: Extract version from API package.json
-        id: api-semver
-        run: echo "::set-output name=version::$(jq -r .version ./api/package.json)"
-
-      - name: Extract version from Frontend package.json
-        id: frontend-semver
-        run: echo "::set-output name=version::$(jq -r .version ./app/package.json)"
+          cd app
+          FRONTEND_VERSION=$(jq -r .version package.json)
+          docker buildx build --platform linux/amd64 -t megakuul/xmemo-app:${FRONTEND_VERSION} -t megakuul/xmemo-app:latest --push .
 
