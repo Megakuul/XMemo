@@ -44,7 +44,7 @@ jobs:
       - name: Build and push APP
         uses: docker/build-push-action@v4
         with:
-          context: ./app
+          dockerfile: ./app/Dockerfile
           push: true
           tags: megakuul/xmemo-app:latest , megakuul/xmemo-app:${{ steps.get_app_version.outputs.version }}
 
