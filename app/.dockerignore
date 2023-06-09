@@ -2,3 +2,4 @@
 **/build
 **/.svelte-kit
 .env
+!/.svelte-kit/tsconfig.json

@@ -1,7 +1,7 @@
 <script>
-	import AnimatedIcon from '$lib/components/AnimatedIcon.svelte';
     import Citation from '$lib/components/Citation.svelte';
     import Intersecting from '$lib/components/Intersecting.svelte';
+	import AnimatedIcon from '$lib/components/AnimatedIcon.svelte';
 </script>
 
 <svelte:head>

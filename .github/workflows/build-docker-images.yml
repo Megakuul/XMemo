@@ -37,14 +37,14 @@ jobs:
       - name: Build and push API
         uses: docker/build-push-action@v4
         with:
-          context: ./api/
+          context: ./api
           push: true
           tags: megakuul/xmemo-api:latest , megakuul/xmemo-api:${{ steps.get_api_version.outputs.version }}
   
       - name: Build and push APP
         uses: docker/build-push-action@v4
         with:
-          context: ./app/
+          context: ./app
           push: true
           tags: megakuul/xmemo-app:latest , megakuul/xmemo-app:${{ steps.get_app_version.outputs.version }}
 
