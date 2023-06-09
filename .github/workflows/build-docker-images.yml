@@ -1,0 +1,42 @@
+name: Build and Push Docker Image for the API and the APP
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and push Docker image for API
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          API_VERSION=${{ steps.api-semver.outputs.version }}
+          docker buildx build --platform linux/amd64 -t megakuul/xmemo-api:${API_VERSION} -t megakuul/xmemo-api:latest --push ./api
+
+      - name: Build and push Docker image for Frontend
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          FRONTEND_VERSION=${{ steps.frontend-semver.outputs.version }}
+          docker buildx build --platform linux/amd64 -t megakuul/xmemo-app:${FRONTEND_VERSION} -t megakuul/xmemo-app:latest --push ./app
+
+      - name: Extract version from API package.json
+        id: api-semver
+        run: echo "::set-output name=version::$(jq -r .version ./api/package.json)"
+
+      - name: Extract version from Frontend package.json
+        id: frontend-semver
+        run: echo "::set-output name=version::$(jq -r .version ./app/package.json)"
+

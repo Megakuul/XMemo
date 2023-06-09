@@ -31,6 +31,7 @@ export const setupPublicSocket = async (io: Server) => {
       emitSeveral(queueSubscribers, "queueUpdate", Queue);
     } catch (err: any) {
       emitSeveral(queueSubscribers, "queueUpdateError", err.message);
+      console.error("[ Failed to update Queue ]:\n" + err);
     }
   });
 
@@ -44,6 +45,7 @@ export const setupPublicSocket = async (io: Server) => {
       emitSeveral(leaderboardSubscribers, "leaderboardUpdate", LeaderBoard);
     } catch (err: any) {
       emitSeveral(leaderboardSubscribers, "leaderboardUpdateError", err.message);
+      console.error("[ Failed to update Leaderboard ]:\n" + err);
     }
   });
 

@@ -36,7 +36,8 @@ import { io, type Socket } from "socket.io-client";
 export const onPubSock = (callback: any) => {
   const pubSocket: Socket = io(import.meta.env.VITE_API_URL, {
     path: "/api/publicsock",
-    transports: [ "websocket" ]
+    transports: [ "websocket" ],
+    secure: import.meta.env.VITE_API_URL ? false : true
   });
   if (pubSocket.connected) {
     callback(pubSocket);
@@ -101,7 +102,8 @@ export const onAuthSock = (token: string, callback: any) => {
   const authSocket = io(import.meta.env.VITE_API_URL, { 
     path: "/api/authsock",
     query: { token },
-    transports: [ "websocket" ]
+    transports: [ "websocket" ],
+    secure: import.meta.env.VITE_API_URL ? false : true
   });
 
   if (authSocket.connected) {
