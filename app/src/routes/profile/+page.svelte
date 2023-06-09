@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ChangeUser, GetProfile, type IProfile } from "$lib/adapter/auth";
-  import LoadingIcon from "$lib/components/LoadingIcon.svelte";
+    import LoadIcon from "$lib/components/LoadIcon.svelte";
     import { getRankingColor } from "$lib/components/rankingcolor";
   import { SnackBar } from "$lib/components/snackbar.store";
   import { deleteCookie, getCookie } from "$lib/cookies";
@@ -48,7 +48,7 @@
 </script>
 
 {#if Loading}
-  <LoadingIcon />
+  <LoadIcon />
 {:else if Profile}
   <h1 class="title">Profile</h1>
   <div class="profile-container">

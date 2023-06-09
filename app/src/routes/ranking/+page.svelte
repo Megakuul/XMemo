@@ -3,7 +3,7 @@
   import type { Socket } from "socket.io-client";
   import LeaderboardItem from "./leaderboardItem.svelte";
   import { onDestroy, onMount } from "svelte";
-    import LoadingIcon from "$lib/components/LoadingIcon.svelte";
+    import LoadIcon from "$lib/components/LoadIcon.svelte";
 
   let cleanPubSock: any;
 
@@ -40,5 +40,5 @@
   <h1 class="err-title">Error 404</h1>
   <p class="err-msg">{errormsg}</p>
 {:else}
-  <LoadingIcon />
+  <LoadIcon />
 {/if}

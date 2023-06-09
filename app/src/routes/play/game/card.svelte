@@ -1,8 +1,8 @@
 <script lang="ts">
   import { writable, derived } from 'svelte/store';
-  import RandomIcon from "$lib/components/RandomIcon.svelte";
   import type { ICard } from "$lib/types";
     import Logo from '$lib/components/Logo.svelte';
+    import RandIcon from '$lib/components/RandIcon.svelte';
 
   export let card: ICard;
   export let move: any;
@@ -39,7 +39,7 @@
     <div class="cardcaptured">
     </div>
   {:else if card.discovered}
-    <RandomIcon tag={card.tag} salt={salt}></RandomIcon>
+    <RandIcon tag={card.tag} salt={salt}></RandIcon>
   {:else}
     <div class="cardbackside">
       <Logo height="75" width="75" color="rgb(255,255,255,0.6)" animationoption="8s ease"/>
