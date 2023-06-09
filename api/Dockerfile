@@ -13,9 +13,6 @@ RUN npm install --only=production
 # Copy the rest of the application code
 COPY . .
 
-# Compile Typescript
-RUN npm run build
-
 # Expose the port that the application will listen on
 EXPOSE 80
 

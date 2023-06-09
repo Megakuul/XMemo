@@ -26,6 +26,7 @@ export const setupPublicSocket = async (io) => {
         }
         catch (err) {
             emitSeveral(queueSubscribers, "queueUpdateError", err.message);
+            console.error("[ Failed to update Queue ]:\n" + err);
         }
     });
     await useDatabaseTrigger(User, async () => {
@@ -37,6 +38,7 @@ export const setupPublicSocket = async (io) => {
         }
         catch (err) {
             emitSeveral(leaderboardSubscribers, "leaderboardUpdateError", err.message);
+            console.error("[ Failed to update Leaderboard ]:\n" + err);
         }
     });
     io.on("connection", (socket) => {
