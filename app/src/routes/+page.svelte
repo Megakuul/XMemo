@@ -1,7 +1,6 @@
 <script>
     import Citation from '$lib/components/Citation.svelte';
     import Intersecting from '$lib/components/Intersecting.svelte';
-	import AnimatedIcon from '$lib/components/AnimatedIcon.svelte';
 </script>
 
 <svelte:head>
@@ -11,7 +10,6 @@
 
 <section>
 	<h1>XMemo</h1>
-	<AnimatedIcon width="280" height="280" color="rgb(255,255,255,0.8)" animationoption="10s ease"/>
 </section>
 
 <section style="margin: 30vh 0 30vh 0">
