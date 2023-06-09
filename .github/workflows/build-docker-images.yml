@@ -23,24 +23,26 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Extract API version
+        id: get_api_version
         run: |
           cd api
-          echo "apiver=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
+          echo "version=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
 
       - name: Extract APP version
+        id: get_app_version
         run: |
           cd app
-          echo "appver=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
+          echo "version=$(jq -r .version package.json)" >> $GITHUB_OUTPUT
 
       - name: Build and push API
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: megakuul/xmemo-api:latest , megakuul/xmemo-app:${{ env.apiver }}
+          tags: megakuul/xmemo-api:latest , megakuul/xmemo-api:${{ steps.get_api_version.outputs.version }}
   
       - name: Build and push APP
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: megakuul/xmemo-app:latest , megakuul/xmemo-app:${{ env.appver }}
+          tags: megakuul/xmemo-app:latest , megakuul/xmemo-app:${{ steps.get_app_version.outputs.version }}
 
