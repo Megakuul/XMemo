@@ -2,7 +2,7 @@
   import { writable, derived } from 'svelte/store';
   import RandomIcon from "$lib/components/RandomIcon.svelte";
   import type { ICard } from "$lib/types";
-  import AnimatedIcon from '$lib/components/AnimatedIcon.svelte';
+    import Logo from '$lib/components/Logo.svelte';
 
   export let card: ICard;
   export let move: any;
@@ -42,7 +42,7 @@
     <RandomIcon tag={card.tag} salt={salt}></RandomIcon>
   {:else}
     <div class="cardbackside">
-      <AnimatedIcon height="75" width="75" color="rgb(255,255,255,0.6)" animationoption="8s ease"/>
+      <Logo height="75" width="75" color="rgb(255,255,255,0.6)" animationoption="8s ease"/>
     </div>
   {/if}
 </div>
