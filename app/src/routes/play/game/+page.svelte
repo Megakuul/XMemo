@@ -84,9 +84,14 @@
   }
 </script>
 
-
+<svelte:head>
+	<title>Gameboard</title>
+	<meta name="description" 
+  content="Watch the game {gameid}" />
+</svelte:head>
 
 {#if board && board.cards}
+
   {#if board.winner_username}
     <div in:fade class="main-banner" style="background-image: linear-gradient(to right, black,darkgreen, darkgreen, black);">
       <h2>The winner is</h2>

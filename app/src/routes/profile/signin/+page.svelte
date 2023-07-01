@@ -26,6 +26,13 @@
 
 </script>
 
+<svelte:head>
+	<title>Sign In</title>
+	<meta name="description" 
+  content="Already have an XMemo account? Sign in here to start playing and testing your memory skills." />
+</svelte:head>
+
+
 <div class="main-form">
   <h1 style="font-size: 50px;">Sign In</h1>
 

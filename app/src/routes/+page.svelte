@@ -6,7 +6,8 @@
 
 <svelte:head>
 	<title>Home</title>
-	<meta name="description" content="XMemo Homepage" />
+	<meta name="description" 
+	content="Welcome to XMemo, the ultimate memory challenge. Play against other players and fight for your place among the best of the best." />
 </svelte:head>
 
 <section>

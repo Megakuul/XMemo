@@ -18,13 +18,13 @@
     } 
   }
 
-  function resetForm() {
-    username = "";
-    password = "";
-    email = "";
-  }
-
 </script>
+
+<svelte:head>
+	<title>Sign Up</title>
+	<meta name="description" 
+  content="Join XMemo and start playing memory games against other players. Sign up now to test your memory skills and see how you rank." />
+</svelte:head>
 
 
 <div class="main-form">

@@ -33,7 +33,7 @@ export const setupPublicSocket = async (io) => {
         try {
             LeaderBoard = await User.find({}, 'username ranking')
                 .sort({ ranking: -1 })
-                .limit(200);
+                .limit(100);
             emitSeveral(leaderboardSubscribers, "leaderboardUpdate", LeaderBoard);
         }
         catch (err) {

@@ -77,6 +77,11 @@
   }
 </script>
 
+<svelte:head>
+	<title>Play</title>
+	<meta name="description" 
+  content="Ready to put your memory to the test? Play XMemo and challenge other players to see who will grab that win." />
+</svelte:head>
 
 <h1 class="title">
   Play XMemo
@@ -85,14 +90,14 @@
   <div class="games-table">
     {#if jwt}
     <div class="game game-title">
-      <p class="gameid">Gameid</p>
+      <p class="gameplayers">Players</p>
       <p class="moves">Moves</p>
     </div>
     {#each currentGames as game}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <div class="game" title="{game.player1.username} vs {game.player2.username}" class:finished={game.game_stage==-1}
+      <div class="game" title="{game._id}" class:finished={game.game_stage==-1}
         on:click={() => window.location.href=`/play/game?gameid=${game._id}`}>
-        <p class="gameid">{game._id}</p>
+        <p class="gameplayers">{game.player1.username} vs {game.player2.username}</p>
         <p class="moves">{game.moves}</p>
       </div>
     {/each}
@@ -234,7 +239,7 @@
     scale: 0.98;
   }
 
-  .games-table .game .gameid {
+  .games-table .game .gameplayers {
     width: 60%;
     overflow: hidden;
   }

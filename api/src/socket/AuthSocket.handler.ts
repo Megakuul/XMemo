@@ -45,8 +45,8 @@ export const handleCurrentGameUpdate = async (
     })
     // Sort the Documents by created attribute
     .sort({ created: 1 })
-    // Limit the Documents by 30
-    .limit(30);
+    // Limit the Documents by 12
+    .limit(12);
     if (!games) {
       socket.emit(errorStream, `No Games found`);
       return;

@@ -31,6 +31,12 @@
   let Leaderboard: any;
 </script>
 
+<svelte:head>
+	<title>Ranking</title>
+	<meta name="description" 
+  content="See how you stack up against the competition. Check out the XMemo rankings and fight your way to the top." />
+</svelte:head>
+
 {#if Leaderboard}
   <h1 class="title">Ranking Leaderboard</h1>
   {#each Leaderboard as item, index}

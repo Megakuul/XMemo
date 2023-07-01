@@ -35,6 +35,12 @@
   }
 </script>
 
+<svelte:head>
+	<title>Edit Password</title>
+	<meta name="description" 
+  content="Keep your XMemo account secure by changing your password regularly. Update your password here." />
+</svelte:head>
+
 <div class="main-form">
   <h1 style="font-size: 50px;">Change Password</h1>
 

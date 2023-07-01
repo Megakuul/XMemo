@@ -47,6 +47,12 @@
   }
 </script>
 
+<svelte:head>
+	<title>Profile</title>
+	<meta name="description" 
+  content="View and edit your XMemo profile. Keep track of your stats and achievements as you play and improve your memory skills." />
+</svelte:head>
+
 {#if Loading}
   <LoadIcon />
 {:else if Profile}
