@@ -4,6 +4,7 @@ const GameQueueSchema = new Schema({
     username: { type: String, required: true },
     ranking: { type: Number, required: true },
     title: { type: String, required: true },
-    createdAt: { type: Date, expires: 60, default: Date.now }
+    // The Queue entry will be deleted after 5 Minutes
+    createdAt: { type: Date, expires: 300, default: Date.now }
 });
 export const GameQueue = model('GameQueue', GameQueueSchema);

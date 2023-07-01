@@ -1,4 +1,5 @@
 export interface IProfile {
+  userid: string;
   username: string;
   email: string;
   description: string;
@@ -29,6 +30,7 @@ export const GetProfile = async (token: string | null): Promise<IProfile | null>
 
   if (resp.ok) {
     return {
+      userid: body.userid,
       username: body.username,
       email: body.email,
       description: body.description,

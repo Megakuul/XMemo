@@ -9,9 +9,10 @@ import { User } from "../models/user.js";
  * @param p1_username Username of player 1
  * @param p2_username Username of player 2
  * @param pairs Number of pairs to create
+ * @param moveTimems Number of milliseconds that game moves can take
  * @returns Promise containing errors if it threw any
  */
-export const createGame = async (p1: IGameQueue, p2: IGameQueue, pairs: number): Promise<void> => {
+export const createGame = async (p1: IGameQueue, p2: IGameQueue, pairs: number, moveTimems: number): Promise<void> => {
   try {
     const player1: any = {
       id: p1.user_id,
@@ -31,7 +32,9 @@ export const createGame = async (p1: IGameQueue, p2: IGameQueue, pairs: number):
       player1: player1,
       player2: player2,
       active_id: player1.id,
-      
+      // The initial Gamemove will be twice as long as the moveTime
+      nextmove: new Date(Date.now() + moveTimems * 2).toUTCString(),
+      moveTimems: moveTimems,
       game_stage: 1,
       moves: 0,
       cards: generateCards(pairs)
@@ -125,6 +128,9 @@ export const move = async (game: IGame, enemy_id: string, discover_id: number): 
   // Set the discovered card to discovered
   changedCard!.discovered = true;
   game.active_id=game.active_id;
+
+  // Set the nextmove time
+  game.nextmove = new Date(Date.now() + game.moveTimems).toUTCString();
   // Save the changes
   await game.save();
 };
