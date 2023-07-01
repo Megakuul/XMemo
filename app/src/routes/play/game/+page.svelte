@@ -10,11 +10,16 @@
     import { fade } from "svelte/transition";
     import type { Socket } from "socket.io-client";
     import LoadIcon from "$lib/components/LoadIcon.svelte";
+    import { GetProfile, type IProfile } from "$lib/adapter/auth";
 
   // Read Gameid from URL Parameter
   const gameid = $page.url.searchParams.get('gameid');
 
+  const title = "Gameboard";
+
   let jwt: string | null;
+
+  let profile: IProfile | null;
 
   let cleanPubSock: any;
 
@@ -23,14 +28,19 @@
   let board: IGame;
   let cards_buf: ICard[] = [];
 
-  onMount(() => {
+  onMount(async () => {
     jwt = getCookie("auth");
+
+    profile = await GetProfile(jwt)
 
     cleanPubSock = onPubSock((socket: Socket) => {
       socket.emit("subscribeGame", gameid);
 
       socket.on("gameUpdate", (game) => {
         board = game;
+        if (document.hidden && board.active_id == profile?.userid) {
+          document.title="Its your turn!";
+        }
       });
       socket.on("gameUpdateError", (error, exacterror) => {
         errormsg = error;
@@ -43,6 +53,12 @@
       cleanPubSock();
     }
   })
+
+  function visibilityChange() {
+    if (!document.hidden) {
+      document.title=title;
+    }
+  }
 
   $: if (board && board.cards) {
     board.cards.forEach((card, index) => {
@@ -85,10 +101,13 @@
 </script>
 
 <svelte:head>
-	<title>Gameboard</title>
+	<title>{title}</title>
 	<meta name="description" 
   content="Watch the game {gameid}" />
 </svelte:head>
+
+<svelte:document on:visibilitychange={visibilityChange} />
+
 
 {#if board && board.cards}
 

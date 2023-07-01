@@ -37,8 +37,8 @@ PlayRouter.post('/queue',
       if (await GameQueue.countDocuments() >= 2) {
         const p1: IGameQueue | null = await GameQueue.findOneAndDelete();
         const p2: IGameQueue | null = await GameQueue.findOneAndDelete();
-        await createGame(p1!, p2!, 20);
-        // TODO: Maybe redirect user to the board
+        // Here the Cards are set to 20 Pairs and the moveTime is set to 20 Seconds
+        await createGame(p1!, p2!, 20, 20 * 1000);
         return res.status(200).json({
           message: "Created Game",
         });
@@ -132,3 +132,53 @@ PlayRouter.post('/move',
     }
   }
 );
+
+PlayRouter.post('/takemove',
+  passport.authenticate('jwt', { session: false }),
+  async (req: any, res: Response) => {
+    const gameid = req.query.gameid;
+
+    const game = await Game.findById(gameid);
+
+    if (!game) {
+      return res.status(404).json({
+        message: "Error on takemove",
+        error: `Game with id: ${gameid} not found`
+      });
+    }
+    if (!req.user || (game.player1.id!=req.user._id && game.player2.id!=req.user._id)) {
+      return res.status(403).json({
+        message: "Error on takemove",
+        error: "Spectators are not allowed to take moves"
+      });
+    }
+    if (game.game_stage === -1) {
+      return res.status(400).json({
+        message: "Error on takemove",
+        error: `Game has finished and is now readonly`
+      });
+    }
+    if (req.user._id == game.active_id) {
+      return res.status(400).json({
+        message: "Error on takemove",
+        error: `You cannot take your own move`
+      });
+    }
+    if (new Date(game.nextmove) < new Date()) {
+      try {
+        game.active_id = req.user._id;
+        game.game_stage = 1;
+        await game.save();
+
+        return res.status(200).json({
+          message: "Successfully took the move"
+        });
+      } catch (err: any) {
+        return res.status(400).json({
+          message: "Error on takemove",
+          error: err.message
+        });
+      }
+    }
+  }
+)

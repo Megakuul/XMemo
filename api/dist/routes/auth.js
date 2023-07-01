@@ -152,6 +152,7 @@ AuthRouter.post('/editpassword', passport.authenticate('jwt', { session: false }
 AuthRouter.get('/profile', passport.authenticate('jwt', { session: false }), async (req, res) => {
     res.status(200).json({
         username: req.user.username,
+        userid: req.user._id,
         email: req.user.email,
         description: req.user.description,
         title: req.user.title,

@@ -23,6 +23,8 @@ export interface IGame extends Document {
   winner_username: string;
   draw: boolean;
   active_id: string;
+  nextmove: string;
+  moveTimems: number;
   game_stage: number;
   moves: number;
   created: Date;
@@ -53,6 +55,8 @@ const GameSchema: Schema = new Schema<IGame>({
   winner_username: { type: String },
   draw: { type: Boolean },
   active_id: { type: String },
+  nextmove: { type: String, required: true },
+  moveTimems: { type: Number, required: true },
   game_stage: { type: Number, required: true },
   moves: { type: Number, required: false },
   cards: { type: [CardSchema], required: true },
