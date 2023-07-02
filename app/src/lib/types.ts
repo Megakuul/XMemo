@@ -22,6 +22,8 @@ export interface IGame {
   winner_username: string;
   draw: boolean;
   active_id: string;
+  nextmove: string;
+  moveTimems: number;
   game_stage: number;
   moves: number;
   created: Date;

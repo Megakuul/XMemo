@@ -168,6 +168,7 @@ PlayRouter.post('/takemove',
       try {
         game.active_id = req.user._id;
         game.game_stage = 1;
+        game.nextmove = new Date(Date.now() + game.moveTimems).toUTCString();
         await game.save();
 
         return res.status(200).json({

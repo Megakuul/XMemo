@@ -1,6 +1,6 @@
 <script lang="ts">
     import { page } from "$app/stores";
-    import { Move } from "$lib/adapter/play";
+    import { Move, TakeMove } from "$lib/adapter/play";
     import { SnackBar } from "$lib/components/snackbar.store";
     import { getCookie } from "$lib/cookies";
     import { onPubSock } from "$lib/socket/socket";
@@ -16,6 +16,8 @@
   const gameid = $page.url.searchParams.get('gameid');
 
   const title = "Gameboard";
+
+  let countdown: number = 0;
 
   let jwt: string | null;
 
@@ -46,6 +48,8 @@
         errormsg = error;
       });
     });
+
+    initCountdown(500);
   });
 
   onDestroy(() => {
@@ -54,12 +58,11 @@
     }
   })
 
-  function visibilityChange() {
-    if (!document.hidden) {
-      document.title=title;
-    }
-  }
-
+  /**
+   * Rotates the cards that got edited
+   * 
+   * This is here so only the cards that got changed will animate
+  */
   $: if (board && board.cards) {
     board.cards.forEach((card, index) => {
       const prevCard = cards_buf[index] || {};
@@ -72,6 +75,10 @@
     cards_buf = board.cards.map(card => ({ ...card }));
   }
 
+  /**
+   * Wraps the Move Adapter to make a move
+   * @param cardid Id of the card to discover
+   */
   async function move(cardid: string) {
     try {
       if (!gameid) {
@@ -86,6 +93,45 @@
     } 
   }
 
+  /**
+   * Wraps the TakeMove Adapter to take a move
+   */
+  async function takemove() {
+    try {
+      if (!gameid) {
+        $SnackBar.message = "No valid Game";
+        $SnackBar.color = "red";
+        return;
+      }
+      await TakeMove(jwt, gameid);
+    } catch (err: any) {
+      $SnackBar.message = err.message;
+      $SnackBar.color = "red";
+    }
+  }
+
+  /**
+   * Initializes the countdown that updates the countdown periodically
+   * 
+   * This function is there that the Time for the move is updated on base of the board.nextmove time
+   * 
+   * sideeffects:
+   * - reads the board.nextmove to fetch the time of the next move
+   * - writes to the countdown variable to set the time
+   * @param interval intervall of the updates
+   */
+  function initCountdown(interval: number) {
+    setInterval(() => {
+      const curDate = new Date();
+      const tarDate = new Date(board.nextmove);
+      countdown = Math.max(0, Math.floor((tarDate.getTime() - curDate.getTime()) / 1000));
+    }, interval)
+  }
+
+  /**
+   * Gets the color for the ranking update number
+   * @param rankingUpdate Ranking Update number
+   */
   function getRankUpdateColor(rankingUpdate: number) {
     if (rankingUpdate > 80) {
       return "rgb(240,230,140)";
@@ -98,6 +144,26 @@
       return "white";
     }
   }
+
+  /**
+   * Resets the Document title if the document is not hidden
+   */
+  function resetDocTitle() {
+    if (!document.hidden) {
+      document.title=title;
+    }
+  }
+
+  /**
+   * Checks if the user is part of the game, but not the active player
+   * -> The opposite of active_id
+   */
+  function isPlayerNotActive(playerid: string | undefined, board: IGame): boolean {
+    if (!playerid) return false;
+    if (playerid != board.player1.id && playerid != board.player2.id) return false;
+    if (playerid==board.active_id) return false;
+    return true;
+  }
 </script>
 
 <svelte:head>
@@ -106,7 +172,7 @@
   content="Watch the game {gameid}" />
 </svelte:head>
 
-<svelte:document on:visibilitychange={visibilityChange} />
+<svelte:document on:visibilitychange={resetDocTitle} />
 
 
 {#if board && board.cards}
@@ -132,7 +198,12 @@
     <div class="infobar">
       <p class="infobar-item">Moves: {board.moves}</p>
       <p class="infobar-item">Cards: {board.cards.filter(card => card.captured === false).length}</p>
-      <p class="infobar-item">Stage: {board.game_stage}</p>
+      {#if countdown >= 1 || !isPlayerNotActive(profile?.userid, board)}
+      <p class="infobar-item">Time: {countdown}</p>
+      {:else}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <p in:fade class="infobar-item btn" on:click={takemove}>Take Move</p>
+      {/if}
     </div>
   </div>
 
@@ -268,11 +339,25 @@
     width: 90%;
     border-radius: 8px;
     background-color: rgb(255, 255, 255, 0.05);
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   .main-infotable .infobar .infobar-item {
     opacity: 0.8;
     padding: 0 20px 0 20px;
+  }
+
+  .main-infotable .infobar .infobar-item.btn {
+    background-color: rgba(0, 255, 0, 0.6);
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 30px 60px -12px inset, rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all ease .8s;
+  }
+
+  .main-infotable .infobar .infobar-item.btn:hover {
+    background-color: rgb(0, 255, 0, 0.5);
   }
 
   .main-table {
