@@ -51,3 +51,22 @@ export const Move = async (token: string | null, game_id: string, discover_id: s
     throw new Error(body.error);
   }
 }
+
+export const TakeMove = async (token: string | null, game_id: string): Promise<void> => {
+  const resp = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/play/takemove?gameid=${game_id}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `${token}`
+    }
+  })
+
+  if (resp.ok) {
+    return;
+  } else if (resp.status == 401) {
+    throw new Error("Log in to contribute to the Game");
+  } else {
+    const body = await resp.json();
+    throw new Error(body.error);
+  }
+}
