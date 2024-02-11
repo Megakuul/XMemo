@@ -65,6 +65,23 @@ Make sure your database is setup as replication, you can do this by connecting t
 
 ---
 
+### Administrator Role
+
+**What is it:**
+
+There is a administrator role, that allows control over the administrator interface.
+- It allows updating users values (u.a. add others to administrator role)
+- It allows changing configuration document, which holds configurations of the XMemo platform
+
+**How to activate it:**
+
+When starting the application, xmemo checks if there is already a user with ADMIN role in the database.
+If not, it adds a default administrator user. By default, the administrator uses `admin` as username, `password` as password and `admin@xmemo` as mail.
+Those credentials can be changed over the API (webinterface) or you can specify the following environment variables to directly set it to custom values:
+- DEFAULT_ADMIN_USERNAME = admin
+- DEFAULT_ADMIN_PASSWORD = password
+- DEFAULT_ADMIN_EMAIL = admin@xmemo
+
 ### Frontend Debug Mode
 
 **What is it:**
@@ -157,6 +174,8 @@ Response Example (JSON):
 
 ```
 
+Function: Registers a user
+
 
 
 **/auth/login**
@@ -192,6 +211,8 @@ Response Example (JSON):
 
 ```
 
+Function: Retrieve jwt token
+
 
 
 **/auth/profile**
@@ -214,12 +235,18 @@ Response Example (JSON):
 ```javascript
 {
     "username": "Kater Karlo",
-    "description": "Ein Kater",
-    "title": "Contender",
-    "ranking": 69
+    "userid": "<userid>",
+    "email": "katerkarlo@gmail.com",
+    "description": "Kater sein Vater",
+    "title": "Beginner",
+    "ranking": "69",
+    "displayedgames": "5",
+    "role": "user"
 }
 
 ```
+
+Function: Get user information
 
 
 
@@ -242,7 +269,8 @@ Body Example (JSON):
 ```javascript
 {
     "newusername": "Trudi",
-    "newdescription": "Freundin von Kater Karlo"
+    "newdescription": "Freundin von Kater Karlo",
+    "newdisplayedgames": "10"
 }
 
 ```
@@ -255,6 +283,8 @@ Response Example (JSON):
 }
 
 ```
+
+Function: Edit user information
 
 
 
@@ -291,6 +321,8 @@ Response Example (JSON):
 
 ```
 
+Function: Update user password
+
 
 
 **/play/queue**
@@ -317,6 +349,8 @@ Response Example (JSON):
 
 ```
 
+Function: Add/Remove player to queue and create game if someone is already waiting
+
 
 
 **/play/queue**
@@ -338,15 +372,17 @@ Response Example (JSON):
     "message": "Successfully loaded queue",
     "queue": [
         {
-            "_id": "<queueitemid>",
             "user_id": "<userid>",
             "username": "Trudi",
-            "__v": 0
+            "ranking": "430",
+            "title": "Beginner",
         }
     ]
 }
 
 ```
+
+Function: Get queue information, data is directly returned from mongo-document
 
 
 
@@ -385,15 +421,113 @@ Response Example (JSON):
 
 ```
 
+Function: Discover a card on the gameboard
+
+**/play/takemove**
+
+---
+
+Type: POST
+
+Params:
+
+| gameid | &lt;gameid&gt; |
+| --- | --- |
+
+Headers:
+
+| Content-Type | application/json |
+| --- | --- |
+| Authorization | Bearer &lt;token&gt; |
+
+
+Response Example (JSON):
+
+```javascript
+{
+    "message": "Move was taken successfully"
+}
+
+```
+
+Function: Steal move from enemy, this only works if the move-time is up
+
+
+**/admin/config**
+
+---
+
+Type: POST
+
+Headers:
+
+| Content-Type | application/json |
+| --- | --- |
+| Authorization | Bearer &lt;token&gt; |
+
+
+Response Example (JSON):
+
+```javascript
+{
+    "config": {
+        "rankedcardpairs": "20",
+        "rankedmovetime": "20",
+        "titlemap": {
+            "500": "Contender",
+            "1000": "Chief",
+        };
+    }
+}
+
+```
+
+Function: Returns the platform configuration object
+Requires a user with "admin" role.
+
+
+**/admin/config**
+
+---
+
+Type: POST
+
+Headers:
+
+| Content-Type | application/json |
+| --- | --- |
+| Authorization | Bearer &lt;token&gt; |
+
+
+Response Example (JSON):
+
+```javascript
+{
+    "config": {
+        "rankedcardpairs": "20",
+        "rankedmovetime": "20",
+        "titlemap": {
+            "500": "Contender",
+            "1000": "Chief",
+        };
+    }
+}
+
+```
+
+Function: Returns the platform configuration object
+Requires a user with "admin" role.
 
 
 ### Websocket:
 
 The Socket is organized in multiple sub-routes that can be subscribed to.
 
-To unsubscribe to the events, just send the exact same command but with the prefix `un-`
+##### Public Socket (/api/publicsock)
 
-**subscribeGame (un-)**
+Query: Nothing
+
+**subscribeGame**
 
 ---
 
@@ -407,7 +541,7 @@ Response Streams:
 
 
 
-**subscribeQueue (un-)**
+**subscribeQueue**
 
 ---
 
@@ -421,7 +555,7 @@ Response Streams:
 
 
 
-**subscribeLeaderboard (un-)**
+**subscribeLeaderboard**
 
 ---
 
@@ -434,68 +568,19 @@ Response Streams:
 | leaderboardUpdateError | Error message (String) |
 
 
+##### Auth Socket (/api/authsock)
 
-**Example (Svelte)**
+Query: Bearer &lt;token&gt;
+
+
+**subscribeCurrentGames (-un)**
 
 ---
 
-Connect Socket:
+Parameter: -
 
-```javascript
-import { io, type Socket } from "socket.io-client";
+Response Streams:
 
-export let socket: Socket;
-
-export const onConnected = (callback: any) => {
-  if (!socket) {
-    socket = io("http://localhost:3000", { path: "/gamesock" });
-  }
-  if (socket.connected) {
-    callback();
-  } else {
-    socket.on("connect", callback);
-  }
-}
-
-```
-
-Subscribe to topics:
-
-```javascript
-<script lang="ts">
-    import { page } from "$app/stores";
-    import { socket, onConnected } from "$lib/socket/socket";
-
-    // Read Gameid from URL Parameter
-    const gameid = $page.url.searchParams.get('gameid');
-
-    onConnected(() => {
-        socket.emit("subscribeGame", gameid);
-
-        socket.on("gameUpdate", (game) => {
-            board = game;
-        });
-        socket.on("gameUpdateError", (error, exacterror) => {
-            errormsg = error;
-        })
-    });
-
-
-    let errormsg: any = null;
-    let board: any;
-</script>
-
-<div class="main-board">
-    {#if board && board.cards}
-        {#each board.cards as card}
-            <h1>{card.discovered}</h1>
-        {/each}
-    {:else if errormsg!=null}
-        <h1 class="err-title">Error 404</h1>
-        <p class="err-msg">{errormsg}</p>
-    {:else}
-        <p class="loading-msg">Loading...</p>
-    {/if}
-</div>
-
-```
+| currentGamesUpdate | Current Games (Array&lt;UserObject&gt;) |
+| --- | --- |
+| currentGamesUpdateError | Error message (String) |

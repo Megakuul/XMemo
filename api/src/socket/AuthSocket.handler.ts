@@ -1,6 +1,7 @@
 import { Socket } from "socket.io";
 import { Game, IGame } from "../models/game.js";
 import { formatGameboard } from "./PublicSocket.handler.js";
+import { User } from "../models/user.js";
 
 
 /**
@@ -36,6 +37,9 @@ export const handleCurrentGameUpdate = async (
       },
     ];
 
+    // Fetch displayedGames (determines how much documents are displayed)
+    const displayedGames = (await User.findById(userid))?.displayedgames;
+
     // Fetch inital Games
     const games: any = await Game.find({
       $or: [
@@ -45,8 +49,7 @@ export const handleCurrentGameUpdate = async (
     })
     // Sort the Documents by created attribute
     .sort({ created: 1 })
-    // Limit the Documents by 12
-    .limit(12);
+    .limit(displayedGames ?? 10);
     if (!games) {
       socket.emit(errorStream, `No Games found`);
       return;

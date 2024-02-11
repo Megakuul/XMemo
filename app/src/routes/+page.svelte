@@ -11,7 +11,7 @@
 </svelte:head>
 
 <section>
-	<h1>XMemo</h1>
+	<h1 style="letter-spacing: 15px;">XMemo</h1>
 	<Logo width="280" height="280" color="rgb(255,255,255,0.8)" animationoption="10s ease"/>
 </section>
 

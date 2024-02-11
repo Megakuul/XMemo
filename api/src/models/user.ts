@@ -1,5 +1,6 @@
 import { Schema, Document, model } from "mongoose";
 import bcrypt from 'bcryptjs';
+import { ROLES } from "../auth/roles";
 
 interface IUser extends Document {
   username: string;
@@ -8,6 +9,8 @@ interface IUser extends Document {
   description: string;
   title: string;
   ranking: number;
+  displayedgames: number;
+  role: string;
   comparePassword(password: string): Promise<boolean>;
 }
 
@@ -17,7 +20,9 @@ const UserSchema: Schema = new Schema<IUser>({
   password: { type: String, required: true },
   description: { type: String, required: false },
   title: { type: String, required: false },
-  ranking: { type: Number, required: false }
+  ranking: { type: Number, required: false, default: 200 },
+  displayedgames: { type: Number, required: false, default: 5 },
+  role: { type: String, required: true, default: ROLES.USER }
 });
 
 // Check if Password got changed, if yes, hash the password

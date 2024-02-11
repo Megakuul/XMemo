@@ -1,31 +1,33 @@
+import mongoose from "mongoose";
 import { Game, ICard, IGame, IPlayer } from "../models/game.js";
-import { GameQueue, IGameQueue } from "../models/queue.js";
-import { User } from "../models/user.js";
+import { IGameQueue } from "../models/queue.js";
 
 /**
  * Creates a Game
- * @param player1.id ID of player 1
- * @param player2.id ID of player 2
- * @param p1_username Username of player 1
- * @param p2_username Username of player 2
+ *
+ * sideeffects:
+ * This function will not influence anything
+ * 
+ * @param queue1 First queue object
+ * @param queue2 Second queue object
  * @param pairs Number of pairs to create
  * @param moveTimems Number of milliseconds that game moves can take
- * @returns Promise containing errors if it threw any
+ * @returns Promise with the created Game object. Game is not written to database!
  */
-export const createGame = async (p1: IGameQueue, p2: IGameQueue, pairs: number, moveTimems: number): Promise<void> => {
+export const createGame = (queue1: IGameQueue, queue2: IGameQueue, pairs: number, moveTimems: number): IGame => {
   try {
     const player1: any = {
-      id: p1.user_id,
-      username: p1.username,
-      title: p1.title,
-      ranking: p1.ranking
+      id: queue1.user_id,
+      username: queue1.username,
+      title: queue1.title,
+      ranking: queue1.ranking
     }
 
     const player2: any = {
-      id: p2.user_id,
-      username: p2.username,
-      title: p2.title,
-      ranking: p2.ranking
+      id: queue2.user_id,
+      username: queue2.username,
+      title: queue2.title,
+      ranking: queue2.ranking
     }
 
     const game = new Game({
@@ -40,10 +42,118 @@ export const createGame = async (p1: IGameQueue, p2: IGameQueue, pairs: number, 
       cards: generateCards(pairs)
     });
   
-    await game.save();
+    return game;
   } catch (err) {
     throw new Error(`Error creating game: ${err}`);
   }
+}
+
+/**
+ * Manages the logic for executing a player's move.
+ * 
+ * sideeffects:
+ * This function will only influence the provided game object
+ * Nothing is written to the database
+ * 
+ * @param dbsess Database session
+ * @param game Game Object
+ * @param enemy_id ID of the player which is not currently active
+ * @param discover_id ID of the card that should be discovered
+ * @returns Promise containing errors if it threw any
+ */
+export const move = (game: IGame, enemy_id: string, discover_id: number) => {
+  // Fetch the changed card
+  const changedCard = game.cards.find((card: any) => card._id.toString() === discover_id);
+
+  // Check card
+  if (!changedCard) {
+    throw new Error(`Card with id: ${discover_id} not found`);
+  }
+
+  if (changedCard.captured) {
+    throw new Error(`Card is already captured`);
+  }
+
+  if (changedCard.discovered) {
+    throw new Error(`Card is already discovered`);
+  }
+
+  switch (game.game_stage) {
+    case 1:
+      handleStage1(game);
+      break;
+    case 2:
+      handleStage2(game, enemy_id, changedCard!);
+      break;
+    case -1:
+      throw new Error(`Game has finished and is now readonly`);
+    default:
+      throw new Error(`The game has become corrupted. Please contact an administrator for assistance.`);
+  }
+
+  // Increment the moves counter
+  game.moves++;
+  // Set the discovered card to discovered
+  changedCard!.discovered = true;
+  game.active_id=game.active_id;
+
+  // Set the nextmove time
+  game.nextmove = new Date(Date.now() + game.moveTimems).toUTCString();
+};
+
+/**
+ * Handles the ending of a game
+ * 
+ * Function will update set the `winner_username` (or `draw` respectively)
+ * and it will set the rank-incrementation for both players.
+ * 
+ * sideeffects:
+ * This function will mutate the provided game object
+ */
+export const finishGame = (game: IGame) => {
+  const countresult: CountResult = countCards(game);
+
+  if (countresult.draw) {
+    game.draw = true;
+  } else {
+    game.winner_username = countresult.winner.username;
+  }
+  let rankUpdates = calculateRanking(countresult.winner, countresult.loser, countresult.draw);
+  
+  // Append ranking update 
+  // (this is here so that it can be displayed without making a additional Database request)
+  if (game.player1.id == rankUpdates.p1_id && game.player2.id == rankUpdates.p2_id) {
+    game.player1.rankupdate = rankUpdates.p1_update;
+    game.player2.rankupdate = rankUpdates.p2_update;
+  } else if (game.player1.id == rankUpdates.p2_id && game.player2.id == rankUpdates.p1_id) {
+    game.player1.rankupdate = rankUpdates.p2_update;
+    game.player2.rankupdate = rankUpdates.p1_update;
+  }
+};
+
+/**
+ * Gets the title based on the ranking and a titlemap
+ * 
+ * sideeffects:
+ * This function will not influence anything
+ * 
+ * @param ranking Rankingpoints of the player
+ * @param titleMap Title map containing ranking milestones as key and title as value
+ * @param defaultTitle Title chosen if no milestone is reached
+ * @returns Title for the respective ranking
+ */
+export const getTitle = (ranking: number, titleMap: Map<number, string>, defaultTitle: string): string => {
+  // Create a map sorted by keys
+  const sortedTitleMap = new Map([...titleMap].sort((a, b) =>
+    // Compare keys (if a larger then b, b is before a)
+    a[0] - b[0]
+  ));
+  for (let [k, v] of sortedTitleMap) {
+    if (ranking > k) {
+      return v;
+    }
+  }
+  return defaultTitle;
 }
 
 /**
@@ -82,68 +192,16 @@ const shuffle = (array: object[]) => {
   }
 }
 
-/**
- * Manages the logic for executing a player's move.
- * 
- * sideeffects:
- * This function will only influence the provided game object
- * And will also influence the database collections "Users"
- * @param game Game Object
- * @param enemy_id ID of the player which is not currently active
- * @param discover_id ID of the card that should be discovered
- * @returns Promise containing errors if it threw any
- */
-export const move = async (game: IGame, enemy_id: string, discover_id: number): Promise<void> => {
-  // Fetch the changed card
-  const changedCard = game.cards.find((card: any) => card._id.toString() === discover_id);
-
-  // Check card
-  if (!changedCard) {
-    throw new Error(`Card with id: ${discover_id} not found`);
-  }
-
-  if (changedCard.captured) {
-    throw new Error(`Card is already captured`);
-  }
-
-  if (changedCard.discovered) {
-    throw new Error(`Card is already discovered`);
-  }
-
-  switch (game.game_stage) {
-    case 1:
-      await handleStage1(game);
-      break;
-    case 2:
-      await handleStage2(game, enemy_id, changedCard!);
-      break;
-    case -1:
-      throw new Error(`Game has finished and is now readonly`);
-    default:
-      throw new Error(`The game has become corrupted. Please contact an administrator for assistance.`);
-  }
-
-  // Increment the moves counter
-  game.moves++;
-  // Set the discovered card to discovered
-  changedCard!.discovered = true;
-  game.active_id=game.active_id;
-
-  // Set the nextmove time
-  game.nextmove = new Date(Date.now() + game.moveTimems).toUTCString();
-  // Save the changes
-  await game.save();
-};
-
 
 /**
  * Handles the first stage of a full move
  * 
  * sideeffects:
  * This function will only influence the provided game object
+ * Nothing is written to the database
  * @param game Game Object
  */
-const handleStage1 = async (game: IGame): Promise<void> => {
+const handleStage1 = (game: IGame) => {
   // Cover all cards
   game.cards.forEach((card: any) => {
     card.discovered = false;
@@ -159,8 +217,11 @@ const handleStage1 = async (game: IGame): Promise<void> => {
  * 
  * sideeffects:
  * This function will only influence the provided game object
+ * Nothing is written to the database
+ * 
+ * If game is finished, game_stage is set to -1
  */
-const handleStage2 = async (game: IGame, enemy_id: string, changedCard: ICard): Promise<void> => {
+const handleStage2 = (game: IGame, enemy_id: string, changedCard: ICard) => {
   let foundMatch = false;
   let foundWinner = false;
   
@@ -184,7 +245,8 @@ const handleStage2 = async (game: IGame, enemy_id: string, changedCard: ICard): 
 
   // If a winner is found
   if (foundWinner) {
-    await handleGameOver(game);
+    game.game_stage = -1;
+    game.active_id = "";
   } else {
     // Set game_stage to 1
     game.game_stage = 1;
@@ -199,6 +261,7 @@ const handleStage2 = async (game: IGame, enemy_id: string, changedCard: ICard): 
  * 
  * sideeffects:
  * This function will only influence the card array (and the objects inside of it)
+ * Nothing is written to the database
  * @param game Game Object
  * @param cards Card array
  */
@@ -209,39 +272,6 @@ const captureMatchedCards = (game: IGame, cards: ICard[]) => {
     cards[i].owner_id = game.active_id;
   }
 };
-
-/**
- * Handles the ending of a game (if all cards are captured)
- * 
- * sideeffects:
- * This function will only influence the provided game object
- * @param game Game Object
- */
-const handleGameOver = async (game: IGame): Promise<void> => {
-  const countresult: CountResult = countCards(game);
-
-  if (countresult.draw) {
-    game.draw = true;
-  } else {
-    game.winner_username = countresult.winner.username;
-  }
-  let rankUpdates = await calculateRankingAndIncrement(countresult.winner, countresult.loser, countresult.draw);
-  
-  // Append ranking update 
-  // (this is here so that it can be displayed without making a additional Database request)
-  if (game.player1.id == rankUpdates.p1_id && game.player2.id == rankUpdates.p2_id) {
-    game.player1.rankupdate = rankUpdates.p1_update;
-    game.player2.rankupdate = rankUpdates.p2_update;
-  } else if (game.player1.id == rankUpdates.p2_id && game.player2.id == rankUpdates.p1_id) {
-    game.player1.rankupdate = rankUpdates.p2_update;
-    game.player2.rankupdate = rankUpdates.p1_update;
-  }
-
-  game.game_stage = -1;
-
-  game.active_id = "";
-};
-
 
 interface CountResult {
   winner: IPlayer;
@@ -293,15 +323,12 @@ const loserScore = 0;
  * Calculates the Ranking and write it to the database
  * 
  * sideeffects:
- * This function will not influence another variable, but it will influence the database collection "Users"
- * 
- * 
- * This function uses a Algorithm to calculate the ranking update for each player
+ * This function will modify nothing
  * @param winner_id id of the winner
  * @param loser_id id of the loser
  */
-const calculateRankingAndIncrement = async (winner: IPlayer, loser: IPlayer, draw: boolean): 
-  Promise<{ p1_id: string, p2_id: string, p1_update: number, p2_update: number }> => {
+const calculateRanking = (winner: IPlayer, loser: IPlayer, draw: boolean): 
+  { p1_id: string, p2_id: string, p1_update: number, p2_update: number } => {
   
   // These variables calculate the expected result based on probability and the ranking
   let tmpWinner_expected: number = 1 / (1+ Math.pow(10, ((loser.ranking - winner.ranking) / 400)));
@@ -310,18 +337,6 @@ const calculateRankingAndIncrement = async (winner: IPlayer, loser: IPlayer, dra
   // These variables calculate the ranking update for the players based on the Elo ranking system
   let tmpWinner_rank: number = Math.round(maxEloScore * ((draw ? drawScore : winnerScore) - tmpWinner_expected));
   let tmpLoser_rank: number = Math.round(maxEloScore * ((draw ? drawScore : loserScore) - tmpLoser_expected));
-
-  await User.findByIdAndUpdate(winner.id, {
-    $inc: {
-      ranking: tmpWinner_rank
-    }
-  });
-
-  await User.findByIdAndUpdate(loser.id, {
-    $inc: {
-      ranking: tmpLoser_rank
-    }
-  });
 
   // For the return it does not matter which player is the winner
   // this only matters to calculate the elo

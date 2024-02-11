@@ -1,8 +1,8 @@
 <script lang="ts">
   import { writable, derived } from 'svelte/store';
   import type { ICard } from "$lib/types";
-    import Logo from '$lib/components/Logo.svelte';
-    import RandIcon from '$lib/components/RandIcon.svelte';
+  import Logo from '$lib/components/Logo.svelte';
+  import RandIcon from '$lib/components/RandIcon.svelte';
 
   export let card: ICard;
   export let move: any;
@@ -24,7 +24,7 @@
   );
 
   // This will set the previous card and the current card if the State of the cards get changed
-  $: if (card) {
+  $: if (card.rotate) {
     prevCard.set($currentCard);
     currentCard.set(card);
   }

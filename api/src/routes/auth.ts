@@ -1,4 +1,4 @@
-import express, {Router, Request, Response} from "express";
+import express, {Router, Response} from "express";
 import passport from "passport";
 import jwt from 'jsonwebtoken';
 import { User } from "../models/user.js";
@@ -11,8 +11,7 @@ const isValidEmail = (email: string): boolean => {
 }
 
 AuthRouter.post('/register', async (req, res) => {
-  const { username, email, description, password } = req.body;
-  const basetitle = "Beginner"
+  const { username, email, password } = req.body;
 
   if (!email || !username || !password) {
     return res.status(400).json({
@@ -35,14 +34,18 @@ AuthRouter.post('/register', async (req, res) => {
     });
   }
 
+  if (password.length < 8 || password.length > 32) {
+    return res.status(405).json({
+      message: "Error registering user",
+      error: "Make sure the password is between 8 and 32 characters long"
+    });
+  }
+
   try {
     const user = new User({
       username: username,
       email: email,
       password: password,
-      description: description,
-      title: basetitle,
-      ranking: 200 
     });
 
     await user.save();
@@ -93,9 +96,10 @@ AuthRouter.post('/login', async (req, res) => {
 AuthRouter.post('/editprofile', 
   passport.authenticate('jwt', { session: false }), 
   async (req: any, res: Response) => {
-    const { newusername, newdescription } = req.body;
+    const { newusername, newdescription, newdisplayedgames } = req.body;
+    const newdisplayedgamesNum = Number(newdisplayedgames);
     
-    if (!newusername && !newdescription) {
+    if (!newusername && !newdescription && !newdisplayedgames) {
       return res.status(400).json({
         message: "Error updating user",
         error: "At least one field (username or password) is required" 
@@ -107,10 +111,16 @@ AuthRouter.post('/editprofile',
         message: "Error updating user",
         error: "Make sure the username is no longer than 15 characters"
       });
-    } else if (newdescription.length > 100) {
+    } else if (newdescription.length > 25) {
       return res.status(405).json({
         message: "Error updating user",
-        error: "Make sure the description is no longer than 100 characters"
+        error: "Make sure the description is no longer than 25 characters"
+      });
+    } else if (newdisplayedgames && 
+      (Number.isNaN(newdisplayedgamesNum) || newdisplayedgamesNum > 100 || newdisplayedgamesNum < 1)) {
+      return res.status(405).json({
+        message: "Error updating user",
+        error: "Displayed games must be specified as number not higher than 100"
       });
     }
 
@@ -122,6 +132,10 @@ AuthRouter.post('/editprofile',
 
     if (newdescription) {
       user.description = newdescription;
+    }
+
+    if (newdisplayedgames) {
+      user.displayedgames = newdisplayedgamesNum;
     }
 
     try {
@@ -189,7 +203,9 @@ AuthRouter.get('/profile',
       email: req.user.email,
       description: req.user.description,
       title: req.user.title,
-      ranking: req.user.ranking
+      ranking: req.user.ranking,
+      displayedgames: req.user.displayedgames,
+      role: req.user.role
     });
   }
 );

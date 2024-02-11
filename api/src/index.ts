@@ -1,4 +1,4 @@
-import express, {Application, Request, Response} from "express";
+import express, {Application} from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import dotenvSafe from "dotenv-safe";
@@ -6,13 +6,15 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
-import passport, { PassportStatic } from "passport";
-import { addJWTStrategie } from './config/passport.js';
+import passport from "passport";
+import { addJWTStrategie } from './auth/passport.js';
 import { connectMongoose } from "./models/db.js";
 import { AuthRouter } from "./routes/auth.js";
 import { setupPublicSocket } from "./socket/PublicSocket.js";
 import { setupAuthSocket } from "./socket/AuthSocket.js";
 import { PlayRouter } from "./routes/play.js";
+import { User } from "./models/user.js";
+import { ROLES } from "./auth/roles.js";
 
 // Load environment variables from .env
 dotenv.config();
@@ -31,7 +33,25 @@ try {
   await connectMongoose(mongoose, process.env.DB_AUTH_STRING);
 } catch (err: any) {
   console.error(`Error connecting mongodb database: ${err.message}`);
-  process.exit(2);
+  process.exit(1);
+}
+
+// Create administrator if not existent
+try {
+  // Check if one user with ADMIN Role exists
+  const admin = await User.findOne({ role: ROLES.ADMIN });
+  if (!admin) {
+    // If no user with ADMIN Role exists, create the default admin account
+    new User({
+      username: process.env.DEFAULT_ADMIN_USERNAME || "admin",
+      password: process.env.DEFAULT_ADMIN_PASSWORD || "password",
+      email: process.env.DEFAULT_ADMIN_EMAIL || "admin@xmemo",
+      role: ROLES.ADMIN
+    }).save();
+  }
+} catch (err: any) {
+  console.error(`Error creating administrator account: ${err.message}`);
+  process.exit(1);
 }
 
 // Initializing the JWT Strategie
@@ -39,7 +59,7 @@ try {
   await addJWTStrategie(passport, process.env.JWT_SECRET_KEY);
 } catch (err: any) {
   console.error(`Error Injecting JWTStrategie: ${err.message}`);
-  process.exit(3);
+  process.exit(1);
 }
 
 // CORS options

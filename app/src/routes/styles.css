@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Raleway&display=swap');
+@import url("//fonts.googleapis.com/css?family=Ubuntu+Mono");
 
 :root {
 	--light-gray: #424549;
@@ -20,7 +20,7 @@ h1,
 h2,
 a,
 p {
-	font-family: 'Raleway', sans-serif;
+	font-family: 'Ubuntu Mono', sans-serif;
 	font-weight: 400;
 }
 

@@ -28,7 +28,12 @@
           $SnackBar.color = "red";
           return;
         }
-        await ChangeUser(getCookie("auth"), Profile!.username, Profile.description || "");
+        await ChangeUser(
+          getCookie("auth"),
+          Profile!.username,
+          Profile.description || "",
+          Profile.displayedgames || 10
+        );
 
         $SnackBar.message = "Saved changes to userprofile";
         $SnackBar.color = "green";
@@ -62,6 +67,11 @@
       <p>{Profile.email}</p>
       <input class="inputbx username" placeholder="Username" bind:value="{Profile.username}">
       <textarea class="inputbx description" placeholder="Description" bind:value="{Profile.description}" />
+      <div class="options">
+        <p title="Number of games displayed in Play panel">Displayed Games: 
+          <input class="inputbx displayedgames" type="number" max="99" min="1" bind:value="{Profile.displayedgames}">
+        </p>
+      </div>
     </div>
     <div class="information">
       <div class="stats">
@@ -121,21 +131,41 @@
 
   .profile .username {
     height: 100px;
+    padding: 20px;
+    margin: 10px;
     font-size: 2rem;
     text-align: center;
   }
 
   .profile .description {
     height: 100%;
+    padding: 5px;
+    margin: 10px;
     text-align: center;
     resize: none;
     font-size: 1rem;
   }
 
-  .profile .inputbx {
-    margin: 20px;
-    padding: 5px;
+  .profile .options {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+  }
 
+  .profile .options p {
+    font-size: 1rem;
+    user-select: none;
+  }
+
+  .profile .options .displayedgames {
+    height: 20px;
+    padding: 10px;
+    font-size: 1rem;
+    text-align: center;
+    border: none;
+  }
+
+  .profile .inputbx {
     border: none;
     font: 'Raleway', sans-serif;
     overflow: hidden;
@@ -143,13 +173,14 @@
     background-color: transparent;
     color: white;
     border-radius: 8px;
+
+    transition: all ease .3s;
   }
 
   .profile .inputbx:focus {
     outline: none;
-    box-shadow: 0.2rem 0.8rem 1.6rem rgb(0, 0, 0, 0.5);
+    box-shadow: inset 0 0 1rem rgb(255, 255, 255, 0.3);
   }
-
 
   .profile-container .information {
     justify-content: space-between;

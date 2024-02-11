@@ -1,28 +1,29 @@
 import { Game } from "../models/game.js";
-import { User } from "../models/user.js";
 /**
  * Creates a Game
- * @param player1.id ID of player 1
- * @param player2.id ID of player 2
- * @param p1_username Username of player 1
- * @param p2_username Username of player 2
+ *
+ * sideeffects:
+ * This function will not influence anything
+ *
+ * @param queue1 First queue object
+ * @param queue2 Second queue object
  * @param pairs Number of pairs to create
  * @param moveTimems Number of milliseconds that game moves can take
- * @returns Promise containing errors if it threw any
+ * @returns Promise with the created Game object. Game is not written to database!
  */
-export const createGame = async (p1, p2, pairs, moveTimems) => {
+export const createGame = (queue1, queue2, pairs, moveTimems) => {
     try {
         const player1 = {
-            id: p1.user_id,
-            username: p1.username,
-            title: p1.title,
-            ranking: p1.ranking
+            id: queue1.user_id,
+            username: queue1.username,
+            title: queue1.title,
+            ranking: queue1.ranking
         };
         const player2 = {
-            id: p2.user_id,
-            username: p2.username,
-            title: p2.title,
-            ranking: p2.ranking
+            id: queue2.user_id,
+            username: queue2.username,
+            title: queue2.title,
+            ranking: queue2.ranking
         };
         const game = new Game({
             player1: player1,
@@ -35,10 +36,85 @@ export const createGame = async (p1, p2, pairs, moveTimems) => {
             moves: 0,
             cards: generateCards(pairs)
         });
-        await game.save();
+        return game;
     }
     catch (err) {
         throw new Error(`Error creating game: ${err}`);
+    }
+};
+/**
+ * Manages the logic for executing a player's move.
+ *
+ * sideeffects:
+ * This function will only influence the provided game object
+ * Nothing is written to the database
+ *
+ * @param dbsess Database session
+ * @param game Game Object
+ * @param enemy_id ID of the player which is not currently active
+ * @param discover_id ID of the card that should be discovered
+ * @returns Promise containing errors if it threw any
+ */
+export const move = (game, enemy_id, discover_id) => {
+    // Fetch the changed card
+    const changedCard = game.cards.find((card) => card._id.toString() === discover_id);
+    // Check card
+    if (!changedCard) {
+        throw new Error(`Card with id: ${discover_id} not found`);
+    }
+    if (changedCard.captured) {
+        throw new Error(`Card is already captured`);
+    }
+    if (changedCard.discovered) {
+        throw new Error(`Card is already discovered`);
+    }
+    switch (game.game_stage) {
+        case 1:
+            handleStage1(game);
+            break;
+        case 2:
+            handleStage2(game, enemy_id, changedCard);
+            break;
+        case -1:
+            throw new Error(`Game has finished and is now readonly`);
+        default:
+            throw new Error(`The game has become corrupted. Please contact an administrator for assistance.`);
+    }
+    // Increment the moves counter
+    game.moves++;
+    // Set the discovered card to discovered
+    changedCard.discovered = true;
+    game.active_id = game.active_id;
+    // Set the nextmove time
+    game.nextmove = new Date(Date.now() + game.moveTimems).toUTCString();
+};
+/**
+ * Handles the ending of a game
+ *
+ * Function will update set the `winner_username` (or `draw` respectively)
+ * and it will set the rank-incrementation for both players.
+ *
+ * sideeffects:
+ * This function will mutate the provided game object
+ */
+export const finishGame = (game) => {
+    const countresult = countCards(game);
+    if (countresult.draw) {
+        game.draw = true;
+    }
+    else {
+        game.winner_username = countresult.winner.username;
+    }
+    let rankUpdates = calculateRanking(countresult.winner, countresult.loser, countresult.draw);
+    // Append ranking update 
+    // (this is here so that it can be displayed without making a additional Database request)
+    if (game.player1.id == rankUpdates.p1_id && game.player2.id == rankUpdates.p2_id) {
+        game.player1.rankupdate = rankUpdates.p1_update;
+        game.player2.rankupdate = rankUpdates.p2_update;
+    }
+    else if (game.player1.id == rankUpdates.p2_id && game.player2.id == rankUpdates.p1_id) {
+        game.player1.rankupdate = rankUpdates.p2_update;
+        game.player2.rankupdate = rankUpdates.p1_update;
     }
 };
 /**
@@ -73,59 +149,14 @@ const shuffle = (array) => {
     }
 };
 /**
- * Manages the logic for executing a player's move.
- *
- * sideeffects:
- * This function will only influence the provided game object
- * And will also influence the database collections "Users"
- * @param game Game Object
- * @param enemy_id ID of the player which is not currently active
- * @param discover_id ID of the card that should be discovered
- * @returns Promise containing errors if it threw any
- */
-export const move = async (game, enemy_id, discover_id) => {
-    // Fetch the changed card
-    const changedCard = game.cards.find((card) => card._id.toString() === discover_id);
-    // Check card
-    if (!changedCard) {
-        throw new Error(`Card with id: ${discover_id} not found`);
-    }
-    if (changedCard.captured) {
-        throw new Error(`Card is already captured`);
-    }
-    if (changedCard.discovered) {
-        throw new Error(`Card is already discovered`);
-    }
-    switch (game.game_stage) {
-        case 1:
-            await handleStage1(game);
-            break;
-        case 2:
-            await handleStage2(game, enemy_id, changedCard);
-            break;
-        case -1:
-            throw new Error(`Game has finished and is now readonly`);
-        default:
-            throw new Error(`The game has become corrupted. Please contact an administrator for assistance.`);
-    }
-    // Increment the moves counter
-    game.moves++;
-    // Set the discovered card to discovered
-    changedCard.discovered = true;
-    game.active_id = game.active_id;
-    // Set the nextmove time
-    game.nextmove = new Date(Date.now() + game.moveTimems).toUTCString();
-    // Save the changes
-    await game.save();
-};
-/**
  * Handles the first stage of a full move
  *
  * sideeffects:
  * This function will only influence the provided game object
+ * Nothing is written to the database
  * @param game Game Object
  */
-const handleStage1 = async (game) => {
+const handleStage1 = (game) => {
     // Cover all cards
     game.cards.forEach((card) => {
         card.discovered = false;
@@ -138,8 +169,11 @@ const handleStage1 = async (game) => {
  *
  * sideeffects:
  * This function will only influence the provided game object
+ * Nothing is written to the database
+ *
+ * If game is finished, game_stage is set to -1
  */
-const handleStage2 = async (game, enemy_id, changedCard) => {
+const handleStage2 = (game, enemy_id, changedCard) => {
     let foundMatch = false;
     let foundWinner = false;
     // Iterate over the cards of the game
@@ -157,7 +191,8 @@ const handleStage2 = async (game, enemy_id, changedCard) => {
     }
     // If a winner is found
     if (foundWinner) {
-        await handleGameOver(game);
+        game.game_stage = -1;
+        game.active_id = "";
     }
     else {
         // Set game_stage to 1
@@ -171,6 +206,7 @@ const handleStage2 = async (game, enemy_id, changedCard) => {
  *
  * sideeffects:
  * This function will only influence the card array (and the objects inside of it)
+ * Nothing is written to the database
  * @param game Game Object
  * @param cards Card array
  */
@@ -180,35 +216,6 @@ const captureMatchedCards = (game, cards) => {
         cards[i].discovered = false;
         cards[i].owner_id = game.active_id;
     }
-};
-/**
- * Handles the ending of a game (if all cards are captured)
- *
- * sideeffects:
- * This function will only influence the provided game object
- * @param game Game Object
- */
-const handleGameOver = async (game) => {
-    const countresult = countCards(game);
-    if (countresult.draw) {
-        game.draw = true;
-    }
-    else {
-        game.winner_username = countresult.winner.username;
-    }
-    let rankUpdates = await calculateRankingAndIncrement(countresult.winner, countresult.loser, countresult.draw);
-    // Append ranking update 
-    // (this is here so that it can be displayed without making a additional Database request)
-    if (game.player1.id == rankUpdates.p1_id && game.player2.id == rankUpdates.p2_id) {
-        game.player1.rankupdate = rankUpdates.p1_update;
-        game.player2.rankupdate = rankUpdates.p2_update;
-    }
-    else if (game.player1.id == rankUpdates.p2_id && game.player2.id == rankUpdates.p1_id) {
-        game.player1.rankupdate = rankUpdates.p2_update;
-        game.player2.rankupdate = rankUpdates.p1_update;
-    }
-    game.game_stage = -1;
-    game.active_id = "";
 };
 /**
  * This function will count cards for both players and returns the winner
@@ -248,30 +255,17 @@ const loserScore = 0;
  * Calculates the Ranking and write it to the database
  *
  * sideeffects:
- * This function will not influence another variable, but it will influence the database collection "Users"
- *
- *
- * This function uses a Algorithm to calculate the ranking update for each player
+ * This function will modify nothing
  * @param winner_id id of the winner
  * @param loser_id id of the loser
  */
-const calculateRankingAndIncrement = async (winner, loser, draw) => {
+const calculateRanking = (winner, loser, draw) => {
     // These variables calculate the expected result based on probability and the ranking
     let tmpWinner_expected = 1 / (1 + Math.pow(10, ((loser.ranking - winner.ranking) / 400)));
     let tmpLoser_expected = 1 - tmpWinner_expected;
     // These variables calculate the ranking update for the players based on the Elo ranking system
     let tmpWinner_rank = Math.round(maxEloScore * ((draw ? drawScore : winnerScore) - tmpWinner_expected));
     let tmpLoser_rank = Math.round(maxEloScore * ((draw ? drawScore : loserScore) - tmpLoser_expected));
-    await User.findByIdAndUpdate(winner.id, {
-        $inc: {
-            ranking: tmpWinner_rank
-        }
-    });
-    await User.findByIdAndUpdate(loser.id, {
-        $inc: {
-            ranking: tmpLoser_rank
-        }
-    });
     // For the return it does not matter which player is the winner
     // this only matters to calculate the elo
     // This return converts "winner" and "loser" back to player1 and 2

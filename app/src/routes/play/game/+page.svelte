@@ -66,9 +66,10 @@
   $: if (board && board.cards) {
     board.cards.forEach((card, index) => {
       const prevCard = cards_buf[index] || {};
-      const discovered = card.discovered;
-      if (prevCard.discovered !== discovered) {
+      if (prevCard.discovered !== card.discovered) {
         card.rotate = true;
+      } else {
+        card.rotate = false;
       }
     });
 
@@ -339,6 +340,7 @@
     width: 90%;
     border-radius: 8px;
     background-color: rgb(255, 255, 255, 0.05);
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
     user-select: none;
     -webkit-user-select: none;
   }
@@ -372,6 +374,7 @@
     width: 90%;
     padding: 10px 0 10px 0;
     background-color: rgb(255, 255, 255, 0.05);
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
     border-radius: 12px;
     display: flex;
     flex-direction: row;

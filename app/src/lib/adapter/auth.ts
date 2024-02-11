@@ -5,6 +5,7 @@ export interface IProfile {
   description: string;
   title: string;
   ranking: string;
+  displayedgames: number;
 }
 
 /**
@@ -36,6 +37,7 @@ export const GetProfile = async (token: string | null): Promise<IProfile | null>
       description: body.description,
       title: body.title,
       ranking: body.ranking,
+      displayedgames: body.displayedgames
     };
   } else {
     throw new Error(body.error);
@@ -103,7 +105,7 @@ export const Register = async (username: string, email: string, password: string
  * @param newusername New Username
  * @param newdescription New Description
  */
-export const ChangeUser = async (token: string | null, newusername: string, newdescription: string): Promise<void> => {
+export const ChangeUser = async (token: string | null, newusername: string, newdescription: string, newdisplayedgames: number): Promise<void> => {
   const resp = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/auth/editprofile`, {
     method: 'POST',
     headers: {
@@ -112,7 +114,8 @@ export const ChangeUser = async (token: string | null, newusername: string, newd
     },
     body: JSON.stringify({
       newusername: newusername,
-      newdescription: newdescription
+      newdescription: newdescription,
+      displayedgames: newdisplayedgames
     })
   })
 

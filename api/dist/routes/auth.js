@@ -91,10 +91,10 @@ AuthRouter.post('/editprofile', passport.authenticate('jwt', { session: false })
             error: "Make sure the username is no longer than 15 characters"
         });
     }
-    else if (newdescription.length > 100) {
+    else if (newdescription.length > 25) {
         return res.status(405).json({
             message: "Error updating user",
-            error: "Make sure the description is no longer than 100 characters"
+            error: "Make sure the description is no longer than 25 characters"
         });
     }
     const user = await User.findOne({ _id: req.user._id });
