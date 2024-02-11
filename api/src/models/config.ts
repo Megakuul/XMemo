@@ -12,4 +12,4 @@ const ConfigSchema: Schema = new Schema<IConfig>({
     titlemap: { type: Map, required: true, default: {} },
 });
 
-export const Config = model<IConfig>('Game', ConfigSchema);
+export const Config = model<IConfig>('Config', ConfigSchema);

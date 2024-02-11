@@ -49,8 +49,8 @@ spec:
       - name: app-pod
         resources:
           limits:
-            memory: "256Mi"
-            cpu: "500m"
+            memory: "300M"
+            cpu: "200m"
         image: megakuul/xmemo-app:latest
         ports:
         - name: web

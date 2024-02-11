@@ -15,6 +15,7 @@ import { setupAuthSocket } from "./socket/AuthSocket.js";
 import { PlayRouter } from "./routes/play.js";
 import { User } from "./models/user.js";
 import { ROLES } from "./auth/roles.js";
+import { AdminRouter } from "./routes/admin.js";
 
 // Load environment variables from .env
 dotenv.config();
@@ -96,6 +97,7 @@ app.use(passport.initialize());
 // Initialize Routes and SocketHandlers
 app.use('/api/auth', AuthRouter);
 app.use('/api/play', PlayRouter);
+app.use('/api/admin', AdminRouter);
 setupPublicSocket(publicSocket);
 setupAuthSocket(authSocket, process.env.JWT_SECRET_KEY);
 

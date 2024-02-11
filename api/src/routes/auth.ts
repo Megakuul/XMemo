@@ -20,28 +20,28 @@ AuthRouter.post('/register', async (req, res) => {
     });
   }
 
-  if (!isValidEmail(email)) {
-    return res.status(400).json({
-      message: "Error registering user",
-      error: "Email has invalid format"
-    });
-  }
-
-  if (username.length > 15) {
-    return res.status(405).json({
-      message: "Error registering user",
-      error: "Make sure the username is no longer than 15 characters"
-    });
-  }
-
-  if (password.length < 8 || password.length > 32) {
-    return res.status(405).json({
-      message: "Error registering user",
-      error: "Make sure the password is between 8 and 32 characters long"
-    });
-  }
-
   try {
+    if (!isValidEmail(email)) {
+      return res.status(400).json({
+        message: "Error registering user",
+        error: "Email has invalid format"
+      });
+    }
+
+    if (username.length > 15) {
+      return res.status(405).json({
+        message: "Error registering user",
+        error: "Make sure the username is no longer than 15 characters"
+      });
+    }
+
+    if (password.length < 8 || password.length > 32) {
+      return res.status(405).json({
+        message: "Error registering user",
+        error: "Make sure the password is between 8 and 32 characters long"
+      });
+    }
+
     const user = new User({
       username: username,
       email: email,
@@ -106,39 +106,39 @@ AuthRouter.post('/editprofile',
       });
     }
 
-    if (newusername.length > 15) {
-      return res.status(405).json({
-        message: "Error updating user",
-        error: "Make sure the username is no longer than 15 characters"
-      });
-    } else if (newdescription.length > 25) {
-      return res.status(405).json({
-        message: "Error updating user",
-        error: "Make sure the description is no longer than 25 characters"
-      });
-    } else if (newdisplayedgames && 
-      (Number.isNaN(newdisplayedgamesNum) || newdisplayedgamesNum > 100 || newdisplayedgamesNum < 1)) {
-      return res.status(405).json({
-        message: "Error updating user",
-        error: "Displayed games must be specified as number not higher than 100"
-      });
-    }
-
-    const user: any = await User.findOne({ _id: req.user._id });
-
-    if (newusername) {
-      user.username = newusername;
-    }
-
-    if (newdescription) {
-      user.description = newdescription;
-    }
-
-    if (newdisplayedgames) {
-      user.displayedgames = newdisplayedgamesNum;
-    }
-
     try {
+      if (newusername.length > 15) {
+        return res.status(405).json({
+          message: "Error updating user",
+          error: "Make sure the username is no longer than 15 characters"
+        });
+      } else if (newdescription.length > 25) {
+        return res.status(405).json({
+          message: "Error updating user",
+          error: "Make sure the description is no longer than 25 characters"
+        });
+      } else if (newdisplayedgames && 
+        (Number.isNaN(newdisplayedgamesNum) || newdisplayedgamesNum > 100 || newdisplayedgamesNum < 1)) {
+        return res.status(405).json({
+          message: "Error updating user",
+          error: "Displayed games must be specified as number not higher than 100"
+        });
+      }
+
+      const user: any = await User.findOne({ _id: req.user._id });
+
+      if (newusername) {
+        user.username = newusername;
+      }
+
+      if (newdescription) {
+        user.description = newdescription;
+      }
+
+      if (newdisplayedgames) {
+        user.displayedgames = newdisplayedgamesNum;
+      }
+
       await user.save();
       res.status(200).json({
         message: "User updated successfully"

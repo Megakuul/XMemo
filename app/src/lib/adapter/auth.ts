@@ -115,7 +115,7 @@ export const ChangeUser = async (token: string | null, newusername: string, newd
     body: JSON.stringify({
       newusername: newusername,
       newdescription: newdescription,
-      displayedgames: newdisplayedgames
+      newdisplayedgames: newdisplayedgames
     })
   })
 

@@ -1,4 +1,4 @@
-# XMEMO - Memory Game Plattform
+# XMEMO - Memory Game Platform
 
 ![XMEMO Favicon](/app/static/favicon.svg "XMemo Icon")
   
@@ -476,14 +476,14 @@ Response Example (JSON):
         "titlemap": {
             "500": "Contender",
             "1000": "Chief",
-        };
+        }
     }
 }
 
 ```
 
 Function: Returns the platform configuration object
-Requires a user with "admin" role.
+Requires a user with "admin" or "maintainer" role.
 
 
 **/admin/config**
@@ -498,25 +498,31 @@ Headers:
 | --- | --- |
 | Authorization | Bearer &lt;token&gt; |
 
-
-Response Example (JSON):
+Body Example (JSON):
 
 ```javascript
 {
-    "config": {
-        "rankedcardpairs": "20",
-        "rankedmovetime": "20",
-        "titlemap": {
-            "500": "Contender",
-            "1000": "Chief",
-        };
+    "newrankedcardpairs": "20",
+    "newrankedmovetime": "15",
+    "newtitlemap": {
+        "500": "Contender",
+        "1000": "Chief",
     }
 }
 
 ```
 
+Response Example (JSON):
+
+```javascript
+{
+    "message": "Successfully updated config"
+}
+
+```
+
 Function: Returns the platform configuration object
-Requires a user with "admin" role.
+Requires a user with "admin" or "maintainer" role.
 
 
 ### Websocket:

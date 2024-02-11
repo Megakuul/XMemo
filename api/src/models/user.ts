@@ -1,6 +1,6 @@
 import { Schema, Document, model } from "mongoose";
 import bcrypt from 'bcryptjs';
-import { ROLES } from "../auth/roles";
+import { ROLES } from "../auth/roles.js";
 
 interface IUser extends Document {
   username: string;
@@ -19,7 +19,7 @@ const UserSchema: Schema = new Schema<IUser>({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   description: { type: String, required: false },
-  title: { type: String, required: false },
+  title: { type: String, required: false, default: "Beginner" },
   ranking: { type: Number, required: false, default: 200 },
   displayedgames: { type: Number, required: false, default: 5 },
   role: { type: String, required: true, default: ROLES.USER }

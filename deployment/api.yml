@@ -49,7 +49,7 @@ spec:
       - name: api-pod
         resources:
           limits:
-            memory: "256Mi"
+            memory: "450Mi"
             cpu: "500m"
         image: megakuul/xmemo-api:latest
         ports:
