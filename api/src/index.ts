@@ -13,9 +13,10 @@ import { AuthRouter } from "./routes/auth.js";
 import { setupPublicSocket } from "./socket/PublicSocket.js";
 import { setupAuthSocket } from "./socket/AuthSocket.js";
 import { PlayRouter } from "./routes/play.js";
-import { User } from "./models/user.js";
+import { IUser, User } from "./models/user.js";
 import { ROLES } from "./auth/roles.js";
 import { AdminRouter } from "./routes/admin.js";
+import { LogErr, LogInfo } from "./logger/logger.js";
 
 // Load environment variables from .env
 dotenv.config();
@@ -25,7 +26,7 @@ try {
   dotenvSafe.config();
 } catch (err: any) {
   const missingVars = err.missing.join(", ");
-  console.error(`Error: Following Environment variables were missing: ${missingVars}`);
+  LogErr(`Error: Following Environment variables were missing: ${missingVars}`);
   process.exit(1);
 }
 
@@ -33,14 +34,14 @@ try {
 try {
   await connectMongoose(mongoose, process.env.DB_AUTH_STRING);
 } catch (err: any) {
-  console.error(`Error connecting mongodb database: ${err.message}`);
+  LogErr(`Error connecting mongodb database: ${err.message}`);
   process.exit(1);
 }
 
 // Create administrator if not existent
 try {
   // Check if one user with ADMIN Role exists
-  const admin = await User.findOne({ role: ROLES.ADMIN });
+  const admin: IUser | null = await User.findOne({ role: ROLES.ADMIN });
   if (!admin) {
     // If no user with ADMIN Role exists, create the default admin account
     new User({
@@ -51,7 +52,7 @@ try {
     }).save();
   }
 } catch (err: any) {
-  console.error(`Error creating administrator account: ${err.message}`);
+  LogErr(`Error creating administrator account: ${err.message}`)
   process.exit(1);
 }
 
@@ -59,7 +60,7 @@ try {
 try {
   await addJWTStrategie(passport, process.env.JWT_SECRET_KEY);
 } catch (err: any) {
-  console.error(`Error Injecting JWTStrategie: ${err.message}`);
+  LogErr(`Error Injecting JWTStrategie: ${err.message}`)
   process.exit(1);
 }
 
@@ -104,5 +105,5 @@ setupAuthSocket(authSocket, process.env.JWT_SECRET_KEY);
 // Start the HTTP Server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  LogInfo(`Server is running on port ${PORT}`);
 });

@@ -3,6 +3,7 @@ import { GameQueue } from "../models/queue.js";
 import { User } from "../models/user.js";
 import { handleGameUpdate, useDatabaseTrigger  } from "./PublicSocket.handler.js";
 import { emitSeveral, removeDisconnectedSockets } from "./PublicSocket.helper.js";
+import { LogWarn } from "../logger/logger.js";
 
 /**
  * Initializes the Public Socket
@@ -31,7 +32,7 @@ export const setupPublicSocket = async (io: Server) => {
       emitSeveral(queueSubscribers, "queueUpdate", Queue);
     } catch (err: any) {
       emitSeveral(queueSubscribers, "queueUpdateError", err.message);
-      console.error("[ Failed to update Queue ]:\n" + err);
+      LogWarn(String(err));
     }
   });
 
@@ -45,7 +46,7 @@ export const setupPublicSocket = async (io: Server) => {
       emitSeveral(leaderboardSubscribers, "leaderboardUpdate", LeaderBoard);
     } catch (err: any) {
       emitSeveral(leaderboardSubscribers, "leaderboardUpdateError", err.message);
-      console.error("[ Failed to update Leaderboard ]:\n" + err);
+      LogWarn(String(err));
     }
   });
 

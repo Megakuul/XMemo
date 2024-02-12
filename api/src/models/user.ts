@@ -2,7 +2,7 @@ import { Schema, Document, model } from "mongoose";
 import bcrypt from 'bcryptjs';
 import { ROLES } from "../auth/roles.js";
 
-interface IUser extends Document {
+export interface IUser extends Document {
   username: string;
   email: string;
   password: string;

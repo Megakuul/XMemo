@@ -1,7 +1,5 @@
 import { Socket } from "socket.io";
 import { Game, IGame } from "../models/game.js";
-import { GameQueue } from "../models/queue.js";
-import { User } from "../models/user.js";
 
 /**
  * Listens for changes to a database model and sends a callback when changes occur.

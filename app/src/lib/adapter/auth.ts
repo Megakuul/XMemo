@@ -6,6 +6,7 @@ export interface IProfile {
   title: string;
   ranking: string;
   displayedgames: number;
+  role: string;
 }
 
 /**
@@ -37,7 +38,8 @@ export const GetProfile = async (token: string | null): Promise<IProfile | null>
       description: body.description,
       title: body.title,
       ranking: body.ranking,
-      displayedgames: body.displayedgames
+      displayedgames: body.displayedgames,
+      role: body.role
     };
   } else {
     throw new Error(body.error);

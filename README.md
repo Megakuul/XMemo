@@ -486,7 +486,7 @@ Function: Returns the platform configuration object
 Requires a user with "admin" or "maintainer" role.
 
 
-**/admin/config**
+**/admin/editconfig**
 
 ---
 
@@ -524,6 +524,80 @@ Response Example (JSON):
 Function: Returns the platform configuration object
 Requires a user with "admin" or "maintainer" role.
 
+
+**/admin/user**
+
+---
+
+Type: GET
+
+Headers:
+
+| Content-Type | application/json |
+| --- | --- |
+| Authorization | Bearer &lt;token&gt; |
+
+Body Example (JSON):
+
+```javascript
+{
+    "username": "Kater Karlo",
+}
+
+```
+
+Response Example (JSON):
+
+```javascript
+{
+    "user": {
+        "userid": "<userid>",
+        "username": "Kater Karlo",
+        "email": "karlo@xmemo",
+        "ranking": "400",
+        "role": "maintainer",
+    }
+}
+
+```
+
+Function: Returns some of the users information
+Requires a user with "admin" role.
+
+
+**/admin/edituser**
+
+---
+
+Type: POST
+
+Headers:
+
+| Content-Type | application/json |
+| --- | --- |
+| Authorization | Bearer &lt;token&gt; |
+
+Body Example (JSON):
+
+```javascript
+{
+    "userid": "<userid>",
+    "newrole": "maintainer",
+}
+
+```
+
+Response Example (JSON):
+
+```javascript
+{
+    "message": "Successfully updated user"
+}
+
+```
+
+Function: Returns some of the users information
+Requires a user with "admin" role.
 
 ### Websocket:
 

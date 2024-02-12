@@ -4,25 +4,23 @@ import { Game } from "../models/game.js";
 import { GameQueue, IGameQueue } from "../models/queue.js";
 import { createGame, finishGame, getTitle, move } from "../game/gamehandler.js";
 import mongoose from "mongoose";
-import { User } from "../models/user.js";
+import { IUser, User } from "../models/user.js";
 import { Config } from "../models/config.js";
+import { LogWarn } from "../logger/logger.js";
 
 export const PlayRouter: Router = express.Router();
 
 PlayRouter.post('/queue',
   passport.authenticate('jwt', { session: false }),
   async (req: any, res: Response) => {
-
-    if (!req.user || !req.user._id || !req.user.username) {
-      return res.status(400).json({
-        message: "Error adding player to queue",
-        error: "Invalid user data"
-      });
-    }
-
-    const dbsess = await mongoose.startSession();
-
     try {
+      if (!req.user || !req.user._id || !req.user.username) {
+        return res.status(400).json({
+          message: "Error adding player to queue",
+          error: "Invalid user data"
+        });
+      }
+
       // Check if player was already in the queue -> remove the player from the queue
       if (await GameQueue.findOneAndDelete({ user_id: req.user._id })) {
         return res.status(200).json({
@@ -30,49 +28,42 @@ PlayRouter.post('/queue',
         });
       }
 
-      // Start transaction to update queue consistently
-      dbsess.startTransaction();
-
-      // Add player to the queue
-      await new GameQueue({
+      // Create player queue element
+      const currentQueue = new GameQueue({
         user_id: req.user._id, 
         username: req.user.username,
         ranking: req.user.ranking,
         title: req.user.title,
-      }).save({ session: dbsess });
-
-      // Check if a Game can be created
-      if (await GameQueue.countDocuments({}, { session: dbsess }) >= 2) {
-        const queueDoc1: IGameQueue | null = await GameQueue.findOneAndDelete({}, { session: dbsess });
-        const queueDoc2: IGameQueue | null = await GameQueue.findOneAndDelete({}, { session: dbsess });
-
+      });
+      // Search for enemy player queue
+      const enemyQueue: IGameQueue | null = await GameQueue.findOneAndDelete({}, {});
+      // If a valid queue object is found, start a game
+      if (enemyQueue) {
         // Fetch global config doc
         const config = await Config.findOne(
           { _id: "config" }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }
         )
 
         // Create new game from the first two GameQueue entries
-        const game = createGame(queueDoc1!, queueDoc2!, config!.rankedcardpairs, config!.rankedmovetime * 1000);
-        await game.save({ session: dbsess });
-        await dbsess.commitTransaction();
-        await dbsess.endSession();
+        const game = createGame(currentQueue!, enemyQueue!, config!.rankedcardpairs, config!.rankedmovetime * 1000);
+        await game.save();
 
         return res.status(200).json({
           message: "Created Game",
         });
       } else {
         // Just add new queue entry
-        await dbsess.commitTransaction();
-        await dbsess.endSession();
+        await currentQueue.save()
       }
 
       return res.status(200).json({
         message: "Added player to the queue"
       });
     } catch (err) {
+      LogWarn(String(err));
       return res.status(500).json({
-        message: "Error adding player to queue",
-        error: err
+        message: 'Error adding player to queue', 
+        error: "Internal error occured" 
       });
     }
   }
@@ -86,9 +77,10 @@ PlayRouter.get('/queue', async (req, res) => {
       queue: queue
     })
   } catch (err) {
-    res.status(500).json({
-      message: "Failed to load queue",
-      error: err
+    LogWarn(String(err));
+    return res.status(500).json({
+      message: 'Failed to load queue', 
+      error: "Internal error occured" 
     });
   }
 });
@@ -96,11 +88,10 @@ PlayRouter.get('/queue', async (req, res) => {
 PlayRouter.post('/move',
   passport.authenticate('jwt', { session: false }),
   async (req: any, res: Response) => {
-
-    const gameid = req.query.gameid;
-    const discover_id = req.body.discover_id;
-    
     try {
+      const gameid = req.query.gameid;
+      const discover_id = req.body.discover_id;
+
       // Set active_id -> "" to lock the game
       // The game returned is in the state of before the update
       const game = await Game.findOneAndUpdate(
@@ -150,8 +141,19 @@ PlayRouter.post('/move',
       }
       
       const enemy_id = game.active_id===game.player1.id ? game.player2.id : game.player1.id;
-      // Handle game move logic
-      move(game, enemy_id, discover_id);
+      try {
+        // Handle game move logic
+        move(game, enemy_id, discover_id);
+      } catch (err: any) {
+        await Game.findOneAndUpdate(
+          { _id: gameid },
+          { $set: { active_id: game.active_id } }
+        );
+        return res.status(400).json({
+          message: "Error on move",
+          error: err.message
+        });
+      }
 
       // If game is finished, call finishGame and update user ranks
       if (game.game_stage==-1) {
@@ -168,14 +170,14 @@ PlayRouter.post('/move',
         dbsess.startTransaction();
 
         // Update player1 ranking
-        const player1 = await User.findByIdAndUpdate(game.player1.id, {
+        const player1: IUser | null = await User.findByIdAndUpdate(game.player1.id, {
           $inc: {
             ranking: game.player1.rankupdate,
           },
         }, { session: dbsess, new: true });
 
         // Update player2 ranking
-        const player2 = await User.findByIdAndUpdate(game.player1.id, {
+        const player2: IUser | null = await User.findByIdAndUpdate(game.player1.id, {
           $inc: {
             ranking: game.player1.rankupdate
           }
@@ -219,9 +221,10 @@ PlayRouter.post('/move',
         message: "Successfully moved"
       });
     } catch (err: any) {
-      return res.status(400).json({
-        message: "Error on move",
-        error: err.message
+      LogWarn(String(err));
+      return res.status(500).json({
+        message: 'Error on move', 
+        error: "Internal error occured" 
       });
     }
   }
@@ -230,15 +233,11 @@ PlayRouter.post('/move',
 PlayRouter.post('/takemove',
   passport.authenticate('jwt', { session: false }),
   async (req: any, res: Response) => {
-    const gameid = req.query.gameid;
-
-    const dbsess = await mongoose.startSession();
-    // Start transaction to mitigate risk of a race condition
-    dbsess.startTransaction();
-
-    const game = await Game.findOne({ _id: gameid }, {}, { session: dbsess });
-
     try {
+      const gameid = req.query.gameid;
+
+      const game = await Game.findOne({ _id: gameid });
+      
       if (!game) {
         return res.status(404).json({
           message: "Error on takemove",
@@ -268,20 +267,18 @@ PlayRouter.post('/takemove',
         game.active_id = req.user._id;
         game.game_stage = 1;
         game.nextmove = new Date(Date.now() + game.moveTimems).toUTCString();
-        await game.save({ session: dbsess });
-        await dbsess.commitTransaction();
+        await game.save();
 
         return res.status(200).json({
           message: "Move was taken successfully"
         });
       }
     } catch (err: any) {
-      return res.status(400).json({
-        message: "Error on takemove",
-        error: err.message
+      LogWarn(String(err));
+      return res.status(500).json({
+        message: 'Error on takemove', 
+        error: "Internal error occured" 
       });
-    } finally {
-      await dbsess.endSession();
     }
   }
 )

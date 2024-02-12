@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { Game, ICard, IGame, IPlayer } from "../models/game.js";
 import { IGameQueue } from "../models/queue.js";
 
@@ -15,37 +14,33 @@ import { IGameQueue } from "../models/queue.js";
  * @returns Promise with the created Game object. Game is not written to database!
  */
 export const createGame = (queue1: IGameQueue, queue2: IGameQueue, pairs: number, moveTimems: number): IGame => {
-  try {
-    const player1: any = {
-      id: queue1.user_id,
-      username: queue1.username,
-      title: queue1.title,
-      ranking: queue1.ranking
-    }
-
-    const player2: any = {
-      id: queue2.user_id,
-      username: queue2.username,
-      title: queue2.title,
-      ranking: queue2.ranking
-    }
-
-    const game = new Game({
-      player1: player1,
-      player2: player2,
-      active_id: player1.id,
-      // The initial Gamemove will be twice as long as the moveTime
-      nextmove: new Date(Date.now() + moveTimems * 2).toUTCString(),
-      moveTimems: moveTimems,
-      game_stage: 1,
-      moves: 0,
-      cards: generateCards(pairs)
-    });
-  
-    return game;
-  } catch (err) {
-    throw new Error(`Error creating game: ${err}`);
+  const player1: any = {
+    id: queue1.user_id,
+    username: queue1.username,
+    title: queue1.title,
+    ranking: queue1.ranking
   }
+
+  const player2: any = {
+    id: queue2.user_id,
+    username: queue2.username,
+    title: queue2.title,
+    ranking: queue2.ranking
+  }
+
+  const game = new Game({
+    player1: player1,
+    player2: player2,
+    active_id: player1.id,
+    // The initial Gamemove will be twice as long as the moveTime
+    nextmove: new Date(Date.now() + moveTimems * 2).toUTCString(),
+    moveTimems: moveTimems,
+    game_stage: 1,
+    moves: 0,
+    cards: generateCards(pairs)
+  });
+
+  return game;
 }
 
 /**
