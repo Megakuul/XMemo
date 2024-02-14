@@ -2,7 +2,7 @@ import express, {Router, Response} from "express";
 import passport from "passport";
 import { IUser, User } from "../models/user.js";
 import { ROLES, RoleFromString } from "../auth/roles.js";
-import { Config } from "../models/config.js";
+import { GetConfig, GetRawConfig } from "../models/config.js";
 import { LogWarn } from "../logger/logger.js";
 
 export const AdminRouter: Router = express.Router();
@@ -19,9 +19,7 @@ AdminRouter.get('/config',
         })
       }
 
-      const config = await Config.findOne(
-        { _id: "config" }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }
-      ).lean();
+      const config = await GetRawConfig();
 
       return res.status(200).json({
         config: config,
@@ -95,9 +93,7 @@ AdminRouter.post('/editconfig',
         });
       }
 
-      const config = await Config.findOne(
-        { _id: "config" }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }
-      )
+      const config = await GetConfig();
 
       if (!Number.isNaN(newrankedcardpairsNum)) {
         config!.rankedcardpairs = newrankedcardpairsNum;

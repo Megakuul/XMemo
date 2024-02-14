@@ -5,8 +5,8 @@ import { GameQueue, IGameQueue } from "../models/queue.js";
 import { createGame, finishGame, getTitle, move } from "../game/gamehandler.js";
 import mongoose from "mongoose";
 import { IUser, User } from "../models/user.js";
-import { Config } from "../models/config.js";
 import { LogWarn } from "../logger/logger.js";
+import { GetConfig } from "../models/config.js";
 
 export const PlayRouter: Router = express.Router();
 
@@ -40,9 +40,7 @@ PlayRouter.post('/queue',
       // If a valid queue object is found, start a game
       if (enemyQueue) {
         // Fetch global config doc
-        const config = await Config.findOne(
-          { _id: "config" }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }
-        )
+        const config = await GetConfig();
 
         // Create new game from the first two GameQueue entries
         const game = createGame(currentQueue!, enemyQueue!, config!.rankedcardpairs, config!.rankedmovetime * 1000);
@@ -158,9 +156,7 @@ PlayRouter.post('/move',
       // If game is finished, call finishGame and update user ranks
       if (game.game_stage==-1) {
         // Fetch global config doc
-        const config = await Config.findOne(
-          { _id: "config" }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }
-        )
+        const config = await GetConfig();
 
         // Handle game finish logic
         finishGame(game);

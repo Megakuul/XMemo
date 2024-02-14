@@ -3,7 +3,7 @@
   import type { Socket } from "socket.io-client";
   import LeaderboardItem from "./leaderboardItem.svelte";
   import { onDestroy, onMount } from "svelte";
-    import LoadIcon from "$lib/components/LoadIcon.svelte";
+  import LoadIcon from "$lib/components/LoadIcon.svelte";
 
   let cleanPubSock: any;
 

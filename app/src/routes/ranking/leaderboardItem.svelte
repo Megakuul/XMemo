@@ -49,9 +49,10 @@
   .Gold,
   .Silver,
   .Bronce {
+    --inset-shadow: inset 0 0 1rem 2rem rgba(0, 0, 0, 0.1);
     height: 2.2em;
     margin: 30px;
-    background-color:black;
+    background-color: rgba(0, 0, 0, 0.5);
   }
 
   .Gold {
@@ -66,6 +67,8 @@
     animation: bronceFlame 1.2s ease-in-out infinite
   }
 
+  
+
 	@keyframes goldFlame {
     0%, 100% {
       box-shadow: 0 0 3.07px #ffd700,
@@ -74,7 +77,8 @@
       3.07px -6.15px 9.23px #ffbd00,
       -3.07px -9.23px 12.31px #ffae00,
       0 -12.31px 13.85px #ff9e00,
-      1.54px -15.38px 15.38px #ff8e00;
+      1.54px -15.38px 15.38px #ff8e00,
+      var(--inset-shadow);
     }
     60% {
       box-shadow: 0 0 3.07px #ffd700,
@@ -83,7 +87,8 @@
       3.85px -7.69px 12.31px #ffbd00,
       -3.85px -10.77px 10.77px #ffae00,
       0 -13.85px 15.38px #ff9e00,
-      1.54px -15.38px 15.38px  #ff8e00;
+      1.54px -15.38px 15.38px  #ff8e00,
+      var(--inset-shadow);
     }
   }
 
@@ -95,7 +100,8 @@
       3.07px -6.15px 9.23px #999999,
       -3.07px -9.23px 12.31px #8c8c8c,
       0 -12.31px 13.85px #7f7f7f,
-      1.54px -15.38px 15.38px #727272;
+      1.54px -15.38px 15.38px #727272,
+      var(--inset-shadow);
     }
     30% {
       box-shadow: 0 0 3.07px #c0c0c0,
@@ -104,7 +110,8 @@
       3.85px -7.69px 12.31px #999999,
       -3.85px -10.77px 10.77px #8c8c8c,
       0 -13.85px 15.38px #7f7f7f,
-      1.54px -15.38px 15.38px  #727272;
+      1.54px -15.38px 15.38px  #727272,
+      var(--inset-shadow);
     }
   }
 
@@ -116,7 +123,8 @@
       3.07px -6.15px 9.23px #895b35,
       -3.07px -9.23px 12.31px #724f36,
       0 -12.31px 13.85px #5b4337,
-      1.54px -15.38px 15.38px #443738;
+      1.54px -15.38px 15.38px #443738,
+      var(--inset-shadow);
     }
     40% {
       box-shadow: 0 0 3.07px #cd7f32,
@@ -125,7 +133,8 @@
       3.85px -7.69px 12.31px #895b35,
       -3.85px -10.77px 10.77px #724f36,
       0 -13.85px 15.38px #5b4337,
-      1.54px -15.38px 15.38px  #443738;
+      1.54px -15.38px 15.38px  #443738,
+      var(--inset-shadow);
     }
   }
 

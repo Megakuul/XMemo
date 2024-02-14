@@ -1,7 +1,7 @@
 export interface IConfig {
   rankedcardpairs: number;
   rankedmovetime: number;
-  titlemap: Map<number, string>;
+  titlemap: string;
 }
 
 export interface IUser {

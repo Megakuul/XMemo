@@ -1,7 +1,7 @@
 <script lang="ts">
   import { ChangeUser, GetProfile, type IProfile } from "$lib/adapter/auth";
-    import LoadIcon from "$lib/components/LoadIcon.svelte";
-    import { getRankingColor } from "$lib/components/rankingcolor";
+  import LoadIcon from "$lib/components/LoadIcon.svelte";
+  import { getRankingColor } from "$lib/components/rankingcolor";
   import { SnackBar } from "$lib/components/snackbar.store";
   import { deleteCookie, getCookie } from "$lib/cookies";
   import { onMount } from "svelte";
@@ -80,6 +80,13 @@
         {Profile.ranking}</div>
         <div class="rank-title">{Profile.title}</div>
       </div>
+      <div class="role" title="{Profile.role=="user" ? "Your role does not allow Admin Console access!" : ""}">
+        <p class="role-text">Role:</p>
+        <p class="role-title">{Profile.role}</p>
+        <a class="role-console-box" class:disabled={Profile.role=="user"}
+          href="/admin">Admin Console
+        </a>
+      </div>
       <div class="options">
         <button on:click={() => window.location.href=`/profile/editpassword`}>
           Change Password
@@ -112,7 +119,7 @@
     align-self: center;
     flex-direction: row;
     width: 95%;
-    height: 400px;
+    height: 450px;
     justify-content: space-between;
   }
 
@@ -188,11 +195,11 @@
   }
 
   .profile-container .information .stats,
-  .profile-container .information .options {
+  .profile-container .information .options,
+  .profile-container .information .role {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    height: 45%;
     background-color: rgb(255, 255, 255, 0.05);
     border-radius: 12px;
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px 0px;
@@ -202,6 +209,7 @@
     justify-content: center;
     align-items: center;
     padding: 10px;
+    height: 38%;
   }
 
   .information .stats .ranking {
@@ -212,8 +220,54 @@
     font-size: 1.5rem;
   }
 
+  .profile-container .information .role {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px 10px 20px;
+    height: 10%;
+  }
+
+  .information .role .role-text {
+    flex: 1;
+  }
+
+  .information .role .role-title {
+    flex: 1;
+  }
+
+  .information .role .role-console-box {
+    flex: 4;
+    font-size: 1.2rem;
+    text-align: center;
+    color: inherit;
+    padding: 13px;
+    border-radius: 12px;
+    background-color: rgba(0, 0, 0, 0.3);
+    transition: all ease .3s;
+  }
+
+  .information .role .role-console-box:hover {
+    text-decoration: underline;
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+
+  .information .role .role-console-box.disabled {
+    text-decoration: line-through;
+    pointer-events: none;
+    color: rgba(255,255,255,0.5);
+    background-color: rgb(169, 169, 169, 0.3);
+  }
+
+  @media screen and (max-width: 600px) {
+    .information .role .role-console-box {
+      font-size: 0.6rem;
+    }
+  }
+
   .profile-container .information .options {
     justify-content: space-around;
+    height: 38%;
   }
 
   .information .options button {

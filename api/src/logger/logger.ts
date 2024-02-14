@@ -10,7 +10,7 @@ import { format } from "date-fns";
 export const LogInfo = (message: string) => {
     const formatMsg = `
     [XMEMO INFORMATION]:\n
-    (${format(new Date(), 'dd.MM.yyyy - ss:mm:HH')})\n
+    (${format(new Date(), 'dd.MM.yyyy - HH:mm:ss')})\n
     ${message}\n
     `;
     console.info(formatMsg);
@@ -22,7 +22,7 @@ export const LogInfo = (message: string) => {
 export const LogWarn = (message: string) => {
     const formatMsg = `
     [XMEMO WARNING]:\n
-    (${format(new Date(), 'dd.MM.yyyy - ss:mm:HH')})\n
+    (${format(new Date(), 'dd.MM.yyyy - HH:mm:ss')})\n
     ${message}\n
     `;
     console.error(formatMsg);
@@ -34,7 +34,7 @@ export const LogWarn = (message: string) => {
 export const LogErr = (message: string) => {
     const formatMsg = `
     [XMEMO ERROR]:\n
-    (${format(new Date(), 'dd.MM.yyyy - ss:mm:HH')})\n
+    (${format(new Date(), 'dd.MM.yyyy - HH:mm:ss')})\n
     ${message}\n
     `;
     console.error(formatMsg);
