@@ -4,7 +4,7 @@
 export interface AdapterConfig {
   rankedcardpairs: number;
   rankedmovetime: number;
-  titlemap: string;
+  titlemap: Array<[string, string]>;
 }
 
 export interface AdapterUser {

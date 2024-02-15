@@ -137,14 +137,14 @@ export const finishGame = (game: IGame) => {
  * @param defaultTitle Title chosen if no milestone is reached
  * @returns Title for the respective ranking
  */
-export const getTitle = (ranking: number, titleMap: Map<number, string>, defaultTitle: string): string => {
+export const getTitle = (ranking: number, titleMap: { [key: number]: string }, defaultTitle: string): string => {
   // Create a map sorted by keys
-  const sortedTitleMap = new Map([...titleMap].sort((a, b) =>
+  const sortedTitleMap = Array.from(Object.entries(titleMap)).sort((a, b) =>
     // Compare keys (if a larger then b, b is before a)
-    a[0] - b[0]
-  ));
+    Number(a[0]) - Number(b[0])
+  );
   for (let [k, v] of sortedTitleMap) {
-    if (ranking > k) {
+    if (ranking > Number(k)) {
       return v;
     }
   }

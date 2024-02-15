@@ -470,13 +470,11 @@ Response Example (JSON):
 
 ```javascript
 {
-    "config": {
-        "rankedcardpairs": "20",
-        "rankedmovetime": "20",
-        "titlemap": {
-            "500": "Contender",
-            "1000": "Chief",
-        }
+    "rankedcardpairs": "20",
+    "rankedmovetime": "20",
+    "titlemap": {
+        "500": "Contender",
+        "1000": "Chief",
     }
 }
 

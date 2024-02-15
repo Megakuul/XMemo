@@ -26,7 +26,7 @@ export const GetConfig = async (token: string | null): Promise<AdapterConfig | n
     return {
       rankedcardpairs: body.rankedcardpairs,
       rankedmovetime: body.rankedmovetime,
-      titlemap: body.titlemap,
+      titlemap: Object.entries(body.titlemap),
     };
   } else {
     throw new Error(body.error);
@@ -40,7 +40,7 @@ export const GetConfig = async (token: string | null): Promise<AdapterConfig | n
  * @param token Auth bearer
  * @param newconfig Updated configuration
  */
-export const UpdateConfig = async (token: string | null, newconfig: AdapterConfig): Promise<void> => {
+export const UpdateConfig = async (token: string | null, newconfig: AdapterConfig): Promise<any> => {
   const resp = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/admin/editconfig`, {
     method: 'POST',
     headers: {
@@ -50,14 +50,14 @@ export const UpdateConfig = async (token: string | null, newconfig: AdapterConfi
     body: JSON.stringify({
       newrankedcardpairs: newconfig.rankedcardpairs,
       newrankedmovetime: newconfig.rankedmovetime,
-      newtitlemap: newconfig.titlemap
+      newtitlemap: JSON.stringify(newconfig.titlemap)
     })
   });
 
   const body = await resp.json();
 
   if (resp.ok) {
-    return;
+    return body.message;
   } else {
     throw new Error(body.error);
   }

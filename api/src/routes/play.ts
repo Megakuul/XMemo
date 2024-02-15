@@ -43,7 +43,7 @@ PlayRouter.post('/queue',
         const config = await GetConfig();
 
         // Create new game from the first two GameQueue entries
-        const game = createGame(currentQueue!, enemyQueue!, config!.rankedcardpairs, config!.rankedmovetime * 1000);
+        const game = createGame(currentQueue!, enemyQueue!, config.rankedcardpairs, config.rankedmovetime * 1000);
         await game.save();
 
         return res.status(200).json({
@@ -180,7 +180,7 @@ PlayRouter.post('/move',
         }, { session: dbsess, new: true });
 
         // Update player1 title
-        if (config?.titlemap && player1?.ranking) {
+        if (config.titlemap && player1?.ranking) {
           await User.findByIdAndUpdate(game.player1.id, {
             $set: {
               title: getTitle(player1.ranking, config.titlemap, "Beginner")
@@ -188,7 +188,7 @@ PlayRouter.post('/move',
           }, { session: dbsess });
         }
         // Update player2 title
-        if (config?.titlemap && player2?.ranking) {
+        if (config.titlemap && player2?.ranking) {
           await User.findByIdAndUpdate(game.player2.id, {
             $set: {
               title: getTitle(player2.ranking, config.titlemap, "Beginner")

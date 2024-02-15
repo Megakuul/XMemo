@@ -2,7 +2,7 @@ import express, {Router, Response} from "express";
 import passport from "passport";
 import { IUser, User } from "../models/user.js";
 import { ROLES, RoleFromString } from "../auth/roles.js";
-import { GetConfig, GetRawConfig } from "../models/config.js";
+import { GetConfig } from "../models/config.js";
 import { LogWarn } from "../logger/logger.js";
 
 export const AdminRouter: Router = express.Router();
@@ -19,10 +19,12 @@ AdminRouter.get('/config',
         })
       }
 
-      const config = await GetRawConfig();
+      const config = await GetConfig();
 
       return res.status(200).json({
-        config: config,
+        rankedcardpairs: config.rankedcardpairs,
+        rankedmovetime: config.rankedmovetime,
+        titlemap: config.titlemap
       });
     } catch (err) {
       LogWarn(String(err), "/admin/config");
@@ -50,7 +52,7 @@ AdminRouter.post('/editconfig',
     
       const newrankedcardpairsNum = Number(newrankedcardpairs);
       const newrankedmovetimeNum = Number(newrankedmovetime);
-      let newtitlemapMap: Map<number, string> | undefined;
+      let newtitlemapMap: { [key: number]: string; } | undefined;
       
       if (!newrankedcardpairs &&
           !newrankedmovetime &&
@@ -77,14 +79,13 @@ AdminRouter.post('/editconfig',
       }
       try {
         if (newtitlemap) {
-          newtitlemapMap = new Map<number, string>(Object.entries(
-            // Parse json
-            JSON.parse(newtitlemap))
-            .map(([key, value]): [number, string] => {
-              // Convert keys to Numbers
-              return [Number(key), String(value)]
-            })
-          );
+          const parsedMap = JSON.parse(newtitlemap)
+          newtitlemapMap = {};
+          for (const [k, v] of parsedMap) {
+            const key = Number(k);
+            if (Number.isNaN(key)) throw Error(`Invalid Number value: ${k}`);
+            newtitlemapMap[Number(k)] = String(v);
+          }
         }
       } catch (err) {
         return res.status(405).json({
@@ -96,18 +97,18 @@ AdminRouter.post('/editconfig',
       const config = await GetConfig();
 
       if (!Number.isNaN(newrankedcardpairsNum)) {
-        config!.rankedcardpairs = newrankedcardpairsNum;
+        config.rankedcardpairs = newrankedcardpairsNum;
       }
 
       if (!Number.isNaN(newrankedmovetimeNum)) {
-        config!.rankedmovetime = newrankedmovetimeNum;
+        config.rankedmovetime = newrankedmovetimeNum;
       }
 
       if (newtitlemapMap) {
-        config!.titlemap = newtitlemapMap;
+        config.titlemap = newtitlemapMap;
       }
 
-      await config!.save();
+      await config.save();
 
       return res.status(200).json({
         message: "Successfully updated config"
