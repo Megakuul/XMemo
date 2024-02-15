@@ -1,11 +1,12 @@
 <script lang="ts">
-  import { GetConfig, type IConfig } from "$lib/adapter/admin";
+  import { GetConfig } from "$lib/adapter/rest/admin";
+  import type { AdapterConfig } from "$lib/adapter/types";
   import { onMount } from "svelte";
-	import { getCookie } from "$lib/cookies";
+	import { getCookie } from "$lib/helper/cookies";
 	import LoadIcon from "$lib/components/LoadIcon.svelte";
   import { SnackBar } from "$lib/components/snackbar.store";
 
-	let Config: IConfig | null;
+	let Config: AdapterConfig | null;
   let Loading: boolean = true;
 
   onMount(async () => {

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Register } from "$lib/adapter/auth";
-    import { SnackBar } from "$lib/components/snackbar.store";
+  import { SnackBar } from "$lib/components/snackbar.store";
+  import { Register } from "$lib/adapter/rest/auth";
 
   let username: string;
   let email: string;

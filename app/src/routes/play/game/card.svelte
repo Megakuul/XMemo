@@ -1,17 +1,17 @@
 <script lang="ts">
   import { writable, derived } from 'svelte/store';
-  import type { ICard } from "$lib/types";
+  import type { AdapterCard } from "$lib/adapter/types";
   import Logo from '$lib/components/Logo.svelte';
   import RandIcon from '$lib/components/RandIcon.svelte';
 
-  export let card: ICard;
+  export let card: AdapterCard;
   export let move: any;
   export let salt: string;
 
   // Previous Card Store
-  const prevCard = writable<ICard | null>(null);
+  const prevCard = writable<AdapterCard | null>(null);
   // Current Card Store
-  const currentCard = writable<ICard>(card);
+  const currentCard = writable<AdapterCard>(card);
 
   /**
    * This function is checking if the current card has the same discovered State as the previous card

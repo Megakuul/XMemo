@@ -58,7 +58,7 @@ PlayRouter.post('/queue',
         message: "Added player to the queue"
       });
     } catch (err) {
-      LogWarn(String(err));
+      LogWarn(String(err), "/play/queue");
       return res.status(500).json({
         message: 'Error adding player to queue', 
         error: "Internal error occured" 
@@ -75,7 +75,7 @@ PlayRouter.get('/queue', async (req, res) => {
       queue: queue
     })
   } catch (err) {
-    LogWarn(String(err));
+    LogWarn(String(err), "/play/queue");
     return res.status(500).json({
       message: 'Failed to load queue', 
       error: "Internal error occured" 
@@ -217,7 +217,7 @@ PlayRouter.post('/move',
         message: "Successfully moved"
       });
     } catch (err: any) {
-      LogWarn(String(err));
+      LogWarn(String(err), "/play/move");
       return res.status(500).json({
         message: 'Error on move', 
         error: "Internal error occured" 
@@ -270,7 +270,7 @@ PlayRouter.post('/takemove',
         });
       }
     } catch (err: any) {
-      LogWarn(String(err));
+      LogWarn(String(err), "/play/takemove");
       return res.status(500).json({
         message: 'Error on takemove', 
         error: "Internal error occured" 

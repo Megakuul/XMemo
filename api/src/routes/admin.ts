@@ -25,7 +25,7 @@ AdminRouter.get('/config',
         config: config,
       });
     } catch (err) {
-      LogWarn(String(err));
+      LogWarn(String(err), "/admin/config");
       return res.status(500).json({
         message: 'Error retrieving config', 
         error: "Internal error occured" 
@@ -113,7 +113,7 @@ AdminRouter.post('/editconfig',
         message: "Successfully updated config"
       });
     } catch (err) {
-      LogWarn(String(err));
+      LogWarn(String(err), "/admin/editconfig");
       return res.status(500).json({
         message: 'Error editing config', 
         error: "Internal error occured" 
@@ -154,7 +154,7 @@ AdminRouter.get('/user',
         }
       });
     } catch (err) {
-      LogWarn(String(err));
+      LogWarn(String(err), "/admin/user");
       return res.status(500).json({
         message: 'Error retrieving user information', 
         error: "Internal error occured" 
@@ -209,7 +209,7 @@ AdminRouter.post('/edituser',
         message: "Successfully updated user"
       });
     } catch (err) {
-      LogWarn(String(err));
+      LogWarn(String(err), "/admin/edituser");
       return res.status(500).json({
         message: 'Error updating user', 
         error: "Internal error occured" 

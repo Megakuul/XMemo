@@ -1,18 +1,13 @@
-export interface IConfig {
-  rankedcardpairs: number;
-  rankedmovetime: number;
-  titlemap: string;
-}
+import type { AdapterConfig, AdapterUser } from "../types";
 
-export interface IUser {
-  userid: string;
-  username: string;
-  email: string;
-  ranking: string;
-  role: string;
-}
-
-export const GetConfig = async (token: string | null): Promise<IConfig | null> => {
+/**
+ * This function will fetch the xmemo config (requires maintainance|admin role)
+ * 
+ * If the request fails Error is thrown containing the API error message
+ * @param token Auth bearer
+ * @returns Config information
+ */
+export const GetConfig = async (token: string | null): Promise<AdapterConfig | null> => {
   if (!token) {
     return null;
   }
@@ -38,7 +33,14 @@ export const GetConfig = async (token: string | null): Promise<IConfig | null> =
   }
 }
 
-export const UpdateConfig = async (token: string | null, newconfig: IConfig): Promise<void> => {
+/**
+ * This function will update the xmemo config (requires maintainance|admin role)
+ * 
+ * If the request fails Error is thrown containing the API error message
+ * @param token Auth bearer
+ * @param newconfig Updated configuration
+ */
+export const UpdateConfig = async (token: string | null, newconfig: AdapterConfig): Promise<void> => {
   const resp = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/admin/editconfig`, {
     method: 'POST',
     headers: {
@@ -61,7 +63,15 @@ export const UpdateConfig = async (token: string | null, newconfig: IConfig): Pr
   }
 }
 
-export const GetUser = async (token: string | null, username: string): Promise<IUser | null> => {
+/**
+ * This function will fetch user information
+ * 
+ * If the request fails Error is thrown containing the API error message
+ * @param token Auth bearer
+ * @param username Username to search for
+ * @returns User information
+ */
+export const GetUser = async (token: string | null, username: string): Promise<AdapterUser | null> => {
   if (!token) {
     return null;
   }
@@ -92,6 +102,14 @@ export const GetUser = async (token: string | null, username: string): Promise<I
   }
 }
 
+/**
+ * This function will update user information
+ * 
+ * If the request fails Error is thrown containing the API error message
+ * @param token Auth bearer
+ * @param userid ID of user to update
+ * @param newrole New role to assign to the user
+ */
 export const UpdateUser = async (token: string | null, userid: string, newrole: string): Promise<void> => {
   const resp = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/admin/edituser`, {
     method: 'POST',

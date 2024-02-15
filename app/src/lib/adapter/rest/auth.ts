@@ -1,21 +1,15 @@
-export interface IProfile {
-  userid: string;
-  username: string;
-  email: string;
-  description: string;
-  title: string;
-  ranking: string;
-  displayedgames: number;
-  role: string;
-}
+import type { AdapterProfile } from "../types";
+
 
 /**
  * This function will authenticate and set the token to the authObject
  * 
  * If there is no token, it will set the authObject to null
- * If the token is invalid, it will throw an error
+ * If the request fails Error is thrown containing the API error message
+ * @param token Auth bearer
+ * @returns Profile information
  */
-export const GetProfile = async (token: string | null): Promise<IProfile | null> => {
+export const GetProfile = async (token: string | null): Promise<AdapterProfile | null> => {
   if (!token) {
     return null;
   }
@@ -49,9 +43,10 @@ export const GetProfile = async (token: string | null): Promise<IProfile | null>
 /**
  * This function will fetch a new token from the server
  * 
- * If the credentials are invalid it will throw an error
+ * If the request fails Error is thrown containing the API error message
  * @param username Username
  * @param password Password
+ * @returns API success message
  */
 export const Login = async (username: string, password: string): Promise<any> => {
   const resp = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/auth/login`, {
@@ -76,6 +71,8 @@ export const Login = async (username: string, password: string): Promise<any> =>
 
 /**
  * This function will register a new user
+ * 
+ * If the request fails Error is thrown containing the API error message
  * @param username Username
  * @param email Email Address
  * @param password Password
@@ -103,6 +100,8 @@ export const Register = async (username: string, email: string, password: string
 
 /**
  * This function will change the information of a user
+ * 
+ * If the request fails Error is thrown containing the API error message
  * @param token Auth token (Bearer)
  * @param newusername New Username
  * @param newdescription New Description
@@ -131,6 +130,8 @@ export const ChangeUser = async (token: string | null, newusername: string, newd
 
 /**
  * This function will change the password of a user
+ * 
+ * If the request fails Error is thrown containing the API error message
  * @param token Auth token (Bearer)
  * @param oldpassword Old Password
  * @param newpassword New Password

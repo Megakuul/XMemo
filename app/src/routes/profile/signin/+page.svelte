@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Login } from "$lib/adapter/auth";
   import { SnackBar } from "$lib/components/snackbar.store";
-  import { setCookie } from "$lib/cookies";
+  import { setCookie } from "$lib/helper/cookies";
+  import { Login } from "$lib/adapter/rest/auth";
 
   let username: string;
   let password: string;

@@ -1,16 +1,18 @@
 <script lang="ts">
-    import { page } from "$app/stores";
-    import { Move, TakeMove } from "$lib/adapter/play";
-    import { SnackBar } from "$lib/components/snackbar.store";
-    import { getCookie } from "$lib/cookies";
-    import { onPubSock } from "$lib/socket/socket";
-    import type { ICard, IGame } from "$lib/types";
-    import { onDestroy, onMount } from "svelte";
-    import Card from "./card.svelte";
-    import { fade } from "svelte/transition";
-    import type { Socket } from "socket.io-client";
-    import LoadIcon from "$lib/components/LoadIcon.svelte";
-    import { GetProfile, type IProfile } from "$lib/adapter/auth";
+  import { onDestroy, onMount } from "svelte";
+  import { fade } from "svelte/transition";
+  import { page } from "$app/stores";
+
+  import { SnackBar } from "$lib/components/snackbar.store";
+  import { getCookie } from "$lib/helper/cookies";
+  import { onPubSock } from "$lib/adapter/socket/pubsock";
+  import { GetProfile} from "$lib/adapter/rest/auth";
+  import { Move, TakeMove} from "$lib/adapter/rest/play";
+  import type { Socket } from "socket.io-client";
+  import type { AdapterCard, AdapterGame, AdapterProfile } from "$lib/adapter/types";
+    
+  import Card from "./card.svelte";
+  import LoadIcon from "$lib/components/LoadIcon.svelte";
 
   // Read Gameid from URL Parameter
   const gameid = $page.url.searchParams.get('gameid');
@@ -21,14 +23,14 @@
 
   let jwt: string | null;
 
-  let profile: IProfile | null;
+  let profile: AdapterProfile | null;
 
   let cleanPubSock: any;
 
   let errormsg: any = null;
 
-  let board: IGame;
-  let cards_buf: ICard[] = [];
+  let board: AdapterGame;
+  let cards_buf: AdapterCard[] = [];
 
   onMount(async () => {
     jwt = getCookie("auth");
@@ -159,7 +161,7 @@
    * Checks if the user is part of the game, but not the active player
    * -> The opposite of active_id
    */
-  function isPlayerNotActive(playerid: string | undefined, board: IGame): boolean {
+  function isPlayerNotActive(playerid: string | undefined, board: AdapterGame): boolean {
     if (!playerid) return false;
     if (playerid != board.player1.id && playerid != board.player2.id) return false;
     if (playerid==board.active_id) return false;

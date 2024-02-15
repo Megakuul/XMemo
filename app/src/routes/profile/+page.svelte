@@ -1,12 +1,14 @@
 <script lang="ts">
-  import { ChangeUser, GetProfile, type IProfile } from "$lib/adapter/auth";
-  import LoadIcon from "$lib/components/LoadIcon.svelte";
-  import { getRankingColor } from "$lib/components/rankingcolor";
-  import { SnackBar } from "$lib/components/snackbar.store";
-  import { deleteCookie, getCookie } from "$lib/cookies";
   import { onMount } from "svelte";
+  import LoadIcon from "$lib/components/LoadIcon.svelte";
+  import { SnackBar } from "$lib/components/snackbar.store";
+  import { getRankingColor } from "$lib/components/rankingcolor";
+  import { deleteCookie, getCookie } from "$lib/helper/cookies";
+  
+  import { ChangeUser, GetProfile } from "$lib/adapter/rest/auth";
+  import type { AdapterProfile } from "$lib/adapter/types";
 
-  let Profile: IProfile | null;
+  let Profile: AdapterProfile | null;
   let Loading: boolean = true;
 
   onMount(async () => {

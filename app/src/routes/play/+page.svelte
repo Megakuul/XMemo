@@ -1,16 +1,20 @@
 <script lang="ts">
-  import { JoinQueue } from "$lib/adapter/play";
-    import { getRankingColor } from "$lib/components/rankingcolor";
-  import { SnackBar } from "$lib/components/snackbar.store";
-  import { getCookie } from "$lib/cookies";
-  import { onAuthSock, onPubSock } from "$lib/socket/socket";
-  import type { IGame, IGameQueue } from "$lib/types";
-  import type { Socket } from "socket.io-client";
   import { onDestroy, onMount } from "svelte";
-  
-  let currentGames: IGame[] = [];
 
-  let gameQueue: IGameQueue[] = [];
+  import { getRankingColor } from "$lib/components/rankingcolor";
+  import { SnackBar } from "$lib/components/snackbar.store";
+  import { getCookie } from "$lib/helper/cookies";
+
+  import { onPubSock } from "$lib/adapter/socket/pubsock";
+  import { onAuthSock } from "$lib/adapter/socket/authsock";
+  import { JoinQueue } from "$lib/adapter/rest/play";
+  import type { AdapterGame, AdapterGameQueue } from "$lib/adapter/types";
+  import type { Socket } from "socket.io-client";
+  
+  
+  let currentGames: AdapterGame[] = [];
+
+  let gameQueue: AdapterGameQueue[] = [];
 
   let jwt: string | null;
 

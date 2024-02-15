@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { onPubSock } from "$lib/socket/socket";
-  import type { Socket } from "socket.io-client";
-  import LeaderboardItem from "./leaderboardItem.svelte";
   import { onDestroy, onMount } from "svelte";
+  import LeaderboardItem from "./leaderboardItem.svelte";
   import LoadIcon from "$lib/components/LoadIcon.svelte";
+
+  import { onPubSock } from "$lib/adapter/socket/pubsock";
+  import type { Socket } from "socket.io-client";
 
   let cleanPubSock: any;
 

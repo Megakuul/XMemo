@@ -1,7 +1,7 @@
 <script lang="ts">
-    import { ChangePassword } from "$lib/adapter/auth";
-    import { SnackBar } from "$lib/components/snackbar.store";
-    import { getCookie } from "$lib/cookies";
+  import { SnackBar } from "$lib/components/snackbar.store";
+  import { getCookie } from "$lib/helper/cookies";
+  import { ChangePassword } from "$lib/adapter/rest/auth";
 
   let password: string;
   let newpassword: string;

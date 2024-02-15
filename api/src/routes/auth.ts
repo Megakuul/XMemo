@@ -52,7 +52,7 @@ AuthRouter.post('/register', async (req, res) => {
     await user.save();
     res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
-    LogWarn(String(err));
+    LogWarn(String(err), "/auth/register");
     return res.status(500).json({
       message: 'Error registering user', 
       error: "Internal error occured" 
@@ -91,7 +91,7 @@ AuthRouter.post('/login', async (req, res) => {
       token: `Bearer ${token}`
     });
   } catch (err) {
-    LogWarn(String(err));
+    LogWarn(String(err), "/auth/login");
     return res.status(500).json({
       message: 'Error logging in', 
       error: "Internal error occured" 
@@ -156,7 +156,7 @@ AuthRouter.post('/editprofile',
         message: "User updated successfully"
       })
     } catch (err) {
-      LogWarn(String(err));
+      LogWarn(String(err), "/auth/editprofile");
       return res.status(500).json({
         message: 'Error updating user', 
         error: "Internal error occured" 
@@ -202,7 +202,7 @@ AuthRouter.post('/editpassword',
         message: "Password changed successfully"
       });
     } catch (err) {
-      LogWarn(String(err));
+      LogWarn(String(err), "/auth/editpassword");
       return res.status(500).json({
         message: 'Error changing password', 
         error: "Internal error occured" 
