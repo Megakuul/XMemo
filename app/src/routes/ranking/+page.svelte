@@ -41,7 +41,7 @@
 {#if Leaderboard}
   <h1 class="title">Ranking Leaderboard</h1>
   {#each Leaderboard as item, index}
-    <LeaderboardItem placement="{index+1}." username="{item.username}" ranking="{item.ranking}"/>
+    <LeaderboardItem placement="{index+1}." username="{item.username}" title="{item.title}" ranking="{item.ranking}"/>
   {/each}
 {:else if errormsg!=null}
   <h1 class="err-title">Error 404</h1>

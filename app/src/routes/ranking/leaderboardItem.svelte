@@ -4,6 +4,7 @@
 
   export let placement: any;
   export let username: any;
+  export let title: any
   export let ranking: any;
 
   const Gold: boolean = placement==1;
@@ -16,8 +17,9 @@
     <div class="placement-bx">
       {placement}
     </div>
-    <div class="username-bx">
-      {username}
+    <div class="player-bx">
+      <div class="user-name">{username}</div>
+      <div class="user-title">{title}</div>
     </div>
     <div class="ranking-bx" 
       style="color: {getRankingColor(ranking)}">
@@ -35,11 +37,12 @@
     padding: 12px;
 
     font-size: 40px;
-    height: 1.5em;
+    height: 2em;
 
     text-align: center;
     overflow: hidden;
     white-space: nowrap;
+    font-weight: 700;
 
     background-color: rgb(255, 255, 255, 0.1);
     border-radius: 8px;
@@ -50,7 +53,7 @@
   .Silver,
   .Bronce {
     --inset-shadow: inset 0 0 1rem 2rem rgba(0, 0, 0, 0.1);
-    height: 2.2em;
+    height: 2.5em;
     margin: 30px;
     background-color: rgba(0, 0, 0, 0.5);
   }
@@ -67,6 +70,20 @@
     animation: bronceFlame 1.2s ease-in-out infinite
   }
 
+  .Gold .placement-bx {
+    color: #ffcc00;
+    text-decoration: underline;
+  }
+
+  .Silver .placement-bx {
+    color: #c0c0c0;
+    text-decoration: underline;
+  }
+
+  .Bronce .placement-bx {
+    color: #a06734;
+    text-decoration: underline;
+  }
   
 
 	@keyframes goldFlame {
@@ -144,11 +161,16 @@
     overflow: hidden;
   }
 
-  .item-container .username-bx {
+  .item-container .player-bx {
     padding-left: 10px;
     padding-right: 10px;
     flex: 6;
     overflow: hidden;
+  }
+
+  .item-container .player-bx .user-title {
+    font-size: .5em;
+    color: rgb(255, 255, 255, 0.6);
   }
 
   .item-container .ranking-bx {

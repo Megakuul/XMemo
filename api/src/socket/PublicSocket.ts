@@ -39,10 +39,11 @@ export const setupPublicSocket = async (io: Server) => {
   await useDatabaseTrigger(User, async () => {
     try {
       LeaderBoard = await User.find({},
-        'username ranking')
+        'username title ranking')
         .sort({ ranking: -1 })
-        .limit(100);
-
+        .limit(100)
+        .lean();
+      
       emitSeveral(leaderboardSubscribers, "leaderboardUpdate", LeaderBoard);
     } catch (err: any) {
       emitSeveral(leaderboardSubscribers, "leaderboardUpdateError", err.message);
