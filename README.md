@@ -529,20 +529,13 @@ Requires a user with "admin" or "maintainer" role.
 
 Type: GET
 
+Param: username (?username=Kater Karlo)
+
 Headers:
 
 | Content-Type | application/json |
 | --- | --- |
 | Authorization | Bearer &lt;token&gt; |
-
-Body Example (JSON):
-
-```javascript
-{
-    "username": "Kater Karlo",
-}
-
-```
 
 Response Example (JSON):
 

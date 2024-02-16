@@ -236,6 +236,7 @@
 
   .information .role .role-title {
     flex: 1;
+    margin-right: .5rem;
   }
 
   .information .role .role-console-box {

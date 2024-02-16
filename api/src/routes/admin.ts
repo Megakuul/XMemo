@@ -48,12 +48,14 @@ AdminRouter.post('/editconfig',
         })
       }
     
+      // Initialize parameters
       const { newrankedcardpairs, newrankedmovetime, newtitlemap } = req.body;
     
       const newrankedcardpairsNum = Number(newrankedcardpairs);
       const newrankedmovetimeNum = Number(newrankedmovetime);
       let newtitlemapMap: { [key: number]: string; } | undefined;
       
+      // Sanitize updated parameters
       if (!newrankedcardpairs &&
           !newrankedmovetime &&
           !newtitlemap) {
@@ -62,7 +64,6 @@ AdminRouter.post('/editconfig',
           error: "At least one field is required" 
         });
       }
-
       if (newrankedcardpairs && 
       (Number.isNaN(newrankedcardpairsNum) || newrankedcardpairsNum > 400 || newrankedcardpairsNum < 1)) {
         return res.status(405).json({
@@ -94,20 +95,18 @@ AdminRouter.post('/editconfig',
         });
       }
 
+      // Fetch Configuration object
       const config = await GetConfig();
 
-      if (!Number.isNaN(newrankedcardpairsNum)) {
+      // Apply updated parameters to Configuration object
+      if (!Number.isNaN(newrankedcardpairsNum))
         config.rankedcardpairs = newrankedcardpairsNum;
-      }
-
-      if (!Number.isNaN(newrankedmovetimeNum)) {
+      if (!Number.isNaN(newrankedmovetimeNum))
         config.rankedmovetime = newrankedmovetimeNum;
-      }
-
-      if (newtitlemapMap) {
+      if (newtitlemapMap)
         config.titlemap = newtitlemapMap;
-      }
 
+      // Write Configuration object to database
       await config.save();
 
       return res.status(200).json({
@@ -135,7 +134,7 @@ AdminRouter.get('/user',
         });
       }
 
-      const { username } = req.body;
+      const username = req.query.username;
 
       const searchedUser: IUser | null = await User.findOne({ username: username });
       if (!searchedUser) {

@@ -170,14 +170,14 @@ PlayRouter.post('/move',
           $inc: {
             ranking: game.player1.rankupdate,
           },
-        }, { session: dbsess, new: true });
+        }, { session: dbsess, new: true, lean: true });
 
         // Update player2 ranking
-        const player2: IUser | null = await User.findByIdAndUpdate(game.player1.id, {
+        const player2: IUser | null = await User.findByIdAndUpdate(game.player2.id, {
           $inc: {
-            ranking: game.player1.rankupdate
+            ranking: game.player2.rankupdate
           }
-        }, { session: dbsess, new: true });
+        }, { session: dbsess, new: true, lean: true });
 
         // Update player1 title
         if (config.titlemap && player1?.ranking) {

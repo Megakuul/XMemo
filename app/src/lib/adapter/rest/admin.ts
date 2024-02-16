@@ -76,26 +76,24 @@ export const GetUser = async (token: string | null, username: string): Promise<A
     return null;
   }
 
-  const resp = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/admin/user`, {
+  const resp = await fetch(
+    `${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/admin/user?username=${username}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `${token}`
     },
-    body: JSON.stringify({
-      username: username,
-    })
   });
 
   const body = await resp.json();
 
   if (resp.ok) {
     return {
-      userid: body.userid,
-      username: body.username,
-      email: body.email,
-      ranking: body.ranking,
-      role: body.role
+      userid: body.user.userid,
+      username: body.user.username,
+      email: body.user.email,
+      ranking: body.user.ranking,
+      role: body.user.role
     };
   } else {
     throw new Error(body.error);
@@ -105,12 +103,14 @@ export const GetUser = async (token: string | null, username: string): Promise<A
 /**
  * This function will update user information
  * 
+ * Takes a full user configuration, but does not apply all properties!
+ * (properties like username and email are immutable for administrator due to privacy reasons)
+ * 
  * If the request fails Error is thrown containing the API error message
  * @param token Auth bearer
- * @param userid ID of user to update
- * @param newrole New role to assign to the user
+ * @param user User element
  */
-export const UpdateUser = async (token: string | null, userid: string, newrole: string): Promise<void> => {
+export const UpdateUser = async (token: string | null, user: AdapterUser): Promise<any> => {
   const resp = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/admin/edituser`, {
     method: 'POST',
     headers: {
@@ -118,15 +118,15 @@ export const UpdateUser = async (token: string | null, userid: string, newrole: 
       'Authorization': `${token}`
     },
     body: JSON.stringify({
-      userid: userid,
-      newrole: newrole,
+      userid: user.userid,
+      newrole: user.role,
     })
   });
 
   const body = await resp.json();
 
   if (resp.ok) {
-    return;
+    return body.message;
   } else {
     throw new Error(body.error);
   }
