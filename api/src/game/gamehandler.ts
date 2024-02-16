@@ -137,13 +137,11 @@ export const finishGame = (game: IGame) => {
  * @param defaultTitle Title chosen if no milestone is reached
  * @returns Title for the respective ranking
  */
-export const getTitle = (ranking: number, titleMap: any, defaultTitle: string): string => {
-  const deretardedMap = JSON.parse(JSON.stringify(titleMap));
-
+export const getTitle = (ranking: number, titleMap: Record<number, string>, defaultTitle: string): string => {
   const titleList: Array<[number, string]> = [];
 
-  for (let k in deretardedMap) {
-    titleList.push([Number(k), deretardedMap[k]])
+  for (let k in titleMap) {
+    titleList.push([Number(k), titleMap[k]])
   }
 
   titleList.sort((a, b) =>

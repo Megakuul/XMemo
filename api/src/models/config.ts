@@ -4,14 +4,14 @@ export interface IConfig extends Document {
     confid: string;
     rankedcardpairs: number;
     rankedmovetime: number;
-    titlemap: { [key: number]: string };
+    titlemap: Record<number, string>;
 }
 
 const ConfigSchema: Schema = new Schema<IConfig>({
     confid: { type: String, required: true },
     rankedcardpairs: { type: Number, required: true, default: 20 },
     rankedmovetime: { type: Number, required: true, default: 20 },
-    titlemap: { type: Map, required: true, default: {} },
+    titlemap: { type: Object, required: true, default: {} },
 });
 
 const Config = model<IConfig>('Config', ConfigSchema);

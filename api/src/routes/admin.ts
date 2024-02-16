@@ -53,7 +53,7 @@ AdminRouter.post('/editconfig',
     
       const newrankedcardpairsNum = Number(newrankedcardpairs);
       const newrankedmovetimeNum = Number(newrankedmovetime);
-      let newtitlemapMap: { [key: number]: string; } | undefined;
+      let newtitlemapMap: Record<number, string> | undefined;
       
       // Sanitize updated parameters
       if (!newrankedcardpairs &&
