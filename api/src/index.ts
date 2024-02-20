@@ -17,6 +17,8 @@ import { IUser, User } from "./models/user.js";
 import { ROLES } from "./auth/roles.js";
 import { AdminRouter } from "./routes/admin.js";
 import { LogErr, LogInfo } from "./logger/logger.js";
+import { auth } from "express-openid-connect";
+import { RequestHandler } from "express-serve-static-core";
 
 // Load environment variables from .env
 dotenv.config();
@@ -94,6 +96,22 @@ app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(passport.initialize());
+// Initializing the oidc middleware
+try {
+  if (process.env.OIDC_ENABLED) {
+    app.use(auth({
+      authRequired: false,
+      auth0Logout: false,
+      secret: process.env.OIDC_SECRET,
+      baseURL: process.env.OIDC_BASEURL,
+      clientID: process.env.OIDC_CLIENTID,
+      issuerBaseURL: process.env.OIDC_ISSUERBASEURL,
+    }));
+  }
+} catch (err: any) {
+  LogErr(`Error initalizing OIDC middleware`)
+  process.exit(1);
+}
 
 // Initialize Routes and SocketHandlers
 app.use('/api/auth', AuthRouter);
