@@ -12,7 +12,7 @@ export const GetConfig = async (token: string | null): Promise<AdapterConfig | n
     return null;
   }
 
-  const resp = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/admin/config`, {
+  const resp = await fetch(`${import.meta.env.VITE_DEV_API_URL?import.meta.env.VITE_DEV_API_URL:""}/api/admin/config`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ export const GetConfig = async (token: string | null): Promise<AdapterConfig | n
  * @param newconfig Updated configuration
  */
 export const UpdateConfig = async (token: string | null, newconfig: AdapterConfig): Promise<any> => {
-  const resp = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/admin/editconfig`, {
+  const resp = await fetch(`${import.meta.env.VITE_DEV_API_URL?import.meta.env.VITE_DEV_API_URL:""}/api/admin/editconfig`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -77,7 +77,7 @@ export const GetUser = async (token: string | null, username: string): Promise<A
   }
 
   const resp = await fetch(
-    `${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/admin/user?username=${username}`, {
+    `${import.meta.env.VITE_DEV_API_URL?import.meta.env.VITE_DEV_API_URL:""}/api/admin/user?username=${username}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -111,7 +111,7 @@ export const GetUser = async (token: string | null, username: string): Promise<A
  * @param user User element
  */
 export const UpdateUser = async (token: string | null, user: AdapterUser): Promise<any> => {
-  const resp = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/admin/edituser`, {
+  const resp = await fetch(`${import.meta.env.VITE_DEV_API_URL?import.meta.env.VITE_DEV_API_URL:""}/api/admin/edituser`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

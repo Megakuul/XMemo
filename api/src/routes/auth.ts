@@ -3,6 +3,9 @@ import passport from "passport";
 import jwt from 'jsonwebtoken';
 import { IUser, User } from "../models/user.js";
 import { LogWarn } from "../logger/logger.js";
+import oidcPkg from "express-openid-connect";
+const { requiresAuth } = oidcPkg;
+import { checkOIDCAvailability } from "../auth/oidc.js";
 
 export const AuthRouter: Router = express.Router();
 
@@ -64,6 +67,43 @@ AuthRouter.post('/register', async (req, res) => {
   }
 });
 
+AuthRouter.get('/oidc/login', checkOIDCAvailability, requiresAuth(), async (req, res) => {
+  try {
+    if (!req.oidc.isAuthenticated()) {
+      return res.status(400).json({
+        message: "Error logging in",
+        error: "Failed to authenticate with OIDC provider"
+      })
+    }
+    console.log(req.oidc);
+    console.log(req.oidc.idTokenClaims)
+
+    return res.status(400).json({
+      message: "Error logging in",
+      error: "Hallo"
+    })
+
+    // Create User object
+    const user: IUser | null = new User({
+      username: "",
+      email: "",
+      password: "",
+    });
+    
+    // Write User object to database
+    await user!.save();
+
+    return res.redirect("google.com")
+
+  } catch (err) {
+    LogWarn(String(err), "/auth/oidc/login");
+    return res.status(500).json({
+      message: 'Error logging in', 
+      error: "Internal error occured" 
+    });
+  }
+});
+
 AuthRouter.post('/login', async (req, res) => {
   try {
     // Initialize parameters
@@ -92,8 +132,10 @@ AuthRouter.post('/login', async (req, res) => {
       });
     }
 
+    const expiration = Number(process.env.JWT_EXPIRATION_DAYS ?? 7)
+
     // Sign token and return it to the user
-    const token = jwt.sign(payload, process.env.JWT_SECRET_KEY!, { expiresIn: '7d' });
+    const token = jwt.sign(payload, process.env.JWT_SECRET_KEY!, { expiresIn: expiration * (24 * 60 * 60) });
     res.status(200).json({ 
       message: "Logged in successfully",
       token: `Bearer ${token}`

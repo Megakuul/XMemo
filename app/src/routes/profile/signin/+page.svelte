@@ -1,16 +1,28 @@
 <script lang="ts">
   import { SnackBar } from "$lib/components/snackbar.store";
   import { setCookie } from "$lib/helper/cookies";
-  import { Login } from "$lib/adapter/rest/auth";
+  import { Login, LoginOIDC } from "$lib/adapter/rest/auth";
 
   let username: string;
   let password: string;
 
   let error: string | null;
 
-  async function getToken() {
+  async function getTokenFromCredentials() {
     try {
       const token = await Login(username, password);
+      setCookie("auth", token, 7);
+      window.location.href = '/profile';
+    } catch (err: any) {
+      $SnackBar.message = err.message;
+      $SnackBar.color = "red";
+      resetForm();
+    } 
+  }
+
+  async function getTokenFromOIDC() {
+    try {
+      const token = await LoginOIDC();
       setCookie("auth", token, 7);
       window.location.href = '/profile';
     } catch (err: any) {
@@ -40,7 +52,11 @@
 
   <input bind:value={password} type="password" placeholder="Password">
 
-  <button on:click={getToken}>
+  <button on:click={getTokenFromOIDC}>
+    Login with OpenID Connect Provider
+  </button>
+
+  <button on:click={getTokenFromCredentials}>
     Submit
   </button>
 </div>

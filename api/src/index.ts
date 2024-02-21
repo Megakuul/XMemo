@@ -7,6 +7,9 @@ import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
 import passport from "passport";
+import { auth } from "express-openid-connect";
+import ExpressSession from "express-session";
+import { default as connectMongoDBSession } from "connect-mongodb-session";
 import { addJWTStrategie } from './auth/passport.js';
 import { connectMongoose } from "./models/db.js";
 import { AuthRouter } from "./routes/auth.js";
@@ -17,8 +20,6 @@ import { IUser, User } from "./models/user.js";
 import { ROLES } from "./auth/roles.js";
 import { AdminRouter } from "./routes/admin.js";
 import { LogErr, LogInfo } from "./logger/logger.js";
-import { auth } from "express-openid-connect";
-import { RequestHandler } from "express-serve-static-core";
 
 // Load environment variables from .env
 dotenv.config();
@@ -91,11 +92,34 @@ const authSocket = new Server(server, {
   path: "/api/authsock"
 });
 
-// Initialize Express Middleware
+// Initialize stateless Express Middleware
 app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(passport.initialize());
+// Initializing express mongo store 
+// -> this is required to manage oidc sessions on the database
+// -> otherwise things like refresh-tokens are stored locally, which doesn't scale horizontally
+try {
+  if (process.env.EXPRESS_DB_SESSION_ENABLE) {
+    const MongoDBStore = connectMongoDBSession(ExpressSession);
+    // Create mongodb store
+    const store = new MongoDBStore({
+      uri: process.env.DB_AUTH_STRING!,
+      collection: "express_sessions"
+    });
+    // Create and initialize express session with the created session
+    app.use(ExpressSession({
+      secret: process.env.EXPRESS_DB_SESSION_SECRET!,
+      resave: false,
+      saveUninitialized: false,
+      store: store,
+    }));
+  }
+} catch (err: any) {
+  LogErr(`Error initalizing Express Session Store: ${err.message}`)
+  process.exit(1);
+}
 // Initializing the oidc middleware
 try {
   if (process.env.OIDC_ENABLED) {
@@ -109,7 +133,7 @@ try {
     }));
   }
 } catch (err: any) {
-  LogErr(`Error initalizing OIDC middleware`)
+  LogErr(`Error initalizing OIDC middleware: ${err.message}`)
   process.exit(1);
 }
 

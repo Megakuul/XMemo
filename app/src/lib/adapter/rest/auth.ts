@@ -14,7 +14,7 @@ export const GetProfile = async (token: string | null): Promise<AdapterProfile |
     return null;
   }
 
-  const resp = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/auth/profile`, {
+  const resp = await fetch(`${import.meta.env.VITE_DEV_API_URL?import.meta.env.VITE_DEV_API_URL:""}/api/auth/profile`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -46,10 +46,10 @@ export const GetProfile = async (token: string | null): Promise<AdapterProfile |
  * If the request fails Error is thrown containing the API error message
  * @param username Username
  * @param password Password
- * @returns API success message
+ * @returns JWT tokens
  */
 export const Login = async (username: string, password: string): Promise<any> => {
-  const resp = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/auth/login`, {
+  const resp = await fetch(`${import.meta.env.VITE_DEV_API_URL?import.meta.env.VITE_DEV_API_URL:""}/api/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -70,6 +70,26 @@ export const Login = async (username: string, password: string): Promise<any> =>
 }
 
 /**
+ * This function will fetch a new token from the server by using OIDC provider
+ * 
+ * If the request fails Error is thrown containing the API error message
+ * @returns JWT tokens
+ */
+export const LoginOIDC = async (): Promise<any> => {
+  const resp = await fetch(`${import.meta.env.VITE_DEV_API_URL?import.meta.env.VITE_DEV_API_URL:""}/api/auth/oidc/login`, {
+    method: 'GET'
+  });
+
+  const body = await resp.json();
+
+  if (resp.ok) {
+    return body.token;
+  } else {
+    throw new Error(body.error);
+  }
+}
+
+/**
  * This function will register a new user
  * 
  * If the request fails Error is thrown containing the API error message
@@ -78,7 +98,7 @@ export const Login = async (username: string, password: string): Promise<any> =>
  * @param password Password
  */
 export const Register = async (username: string, email: string, password: string): Promise<void> => {
-  const resp = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/auth/register`, {
+  const resp = await fetch(`${import.meta.env.VITE_DEV_API_URL?import.meta.env.VITE_DEV_API_URL:""}/api/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -107,7 +127,7 @@ export const Register = async (username: string, email: string, password: string
  * @param newdescription New Description
  */
 export const ChangeUser = async (token: string | null, newusername: string, newdescription: string, newdisplayedgames: number): Promise<void> => {
-  const resp = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/auth/editprofile`, {
+  const resp = await fetch(`${import.meta.env.VITE_DEV_API_URL?import.meta.env.VITE_DEV_API_URL:""}/api/auth/editprofile`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -137,7 +157,7 @@ export const ChangeUser = async (token: string | null, newusername: string, newd
  * @param newpassword New Password
  */
 export const ChangePassword = async (token: string | null, oldpassword: string, newpassword: string): Promise<void> => {
-  const resp = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/auth/editpassword`, {
+  const resp = await fetch(`${import.meta.env.VITE_DEV_API_URL?import.meta.env.VITE_DEV_API_URL:""}/api/auth/editpassword`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

@@ -6,7 +6,7 @@
  * @returns API success message
  */
 export const JoinQueue = async (token: string | null): Promise<any> => {
-  const resp = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/play/queue`, {
+  const resp = await fetch(`${import.meta.env.VITE_DEV_API_URL?import.meta.env.VITE_DEV_API_URL:""}/api/play/queue`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ export const JoinQueue = async (token: string | null): Promise<any> => {
  * @returns API success message
  */
 export const ListQueue = async (): Promise<any> => {
-  const resp = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/play/queue`, {
+  const resp = await fetch(`${import.meta.env.VITE_DEV_API_URL?import.meta.env.VITE_DEV_API_URL:""}/api/play/queue`, {
     method: 'GET'
   })
 
@@ -53,7 +53,7 @@ export const ListQueue = async (): Promise<any> => {
  * @returns API success message
  */
 export const Move = async (token: string | null, game_id: string, discover_id: string): Promise<void> => {
-  const resp = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/play/move?gameid=${game_id}`, {
+  const resp = await fetch(`${import.meta.env.VITE_DEV_API_URL?import.meta.env.VITE_DEV_API_URL:""}/api/play/move?gameid=${game_id}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ export const Move = async (token: string | null, game_id: string, discover_id: s
  * @returns API success message
  */
 export const TakeMove = async (token: string | null, game_id: string): Promise<void> => {
-  const resp = await fetch(`${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : ""}/api/play/takemove?gameid=${game_id}`, {
+  const resp = await fetch(`${import.meta.env.VITE_DEV_API_URL?import.meta.env.VITE_DEV_API_URL:""}/api/play/takemove?gameid=${game_id}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

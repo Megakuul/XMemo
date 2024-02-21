@@ -4,6 +4,7 @@ import { ROLES } from "../auth/roles.js";
 
 export interface IUser extends Document {
   username: string;
+  external: boolean;
   email: string;
   password: string;
   description: string;
@@ -16,6 +17,7 @@ export interface IUser extends Document {
 
 const UserSchema: Schema = new Schema<IUser>({
   username: { type: String, required: true, unique: true },
+  external: { type: Boolean, required: true, default: false },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   description: { type: String, required: false },

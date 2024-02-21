@@ -8,6 +8,12 @@
 🏆 Play memory games against other players and compete in the leaderboard.🏆
 
 🚀 Built stateless and designed to scale horizontal in Kubernetes Workloads 🚀
+
+## Important
+
+Even though this application is not "insecure", you should always be aware that it contains some design decisions that are aimed at simplifying processes rather than making them very secure.
+
+Don't take this code as a example for applications working with highly sensitive data!
   
 ## Deployment
 
