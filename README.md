@@ -207,17 +207,34 @@ Body Example (JSON):
 
 ```
 
-Response Example (JSON):
+Response Example:
 
-```javascript
-{
-    "message": "Logged in successfully",
-    "token": "Bearer <token>"
-}
-
-```
+- Cookie containing "Bearer <jwt>" is added
 
 Function: Retrieve jwt token
+
+
+
+**/auth/oidc/login**
+
+---
+
+Type: GET
+
+Params: -
+
+Response Example:
+
+- Cookie containing "Bearer <jwt>" is added
+- Redirect to "/profile" route
+
+Error message (if any) is added to the redirect route with a query param "error" e.g. "/profile?error=Failed to login"
+
+Important: When using this route with the Browsers fetch API, it may fail due to CORS policies. In prod I recommend to just fully redirect the user to this route.
+
+This endpoint is different to the others, because oidc works with redirects to the OAuth provider, which is blocked by CORS when using the Browser fetch API.
+
+Function: Retrieve jwt token from OIDC provider
 
 
 

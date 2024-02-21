@@ -1,17 +1,24 @@
 <script lang="ts">
   import { SnackBar } from "$lib/components/snackbar.store";
-  import { setCookie } from "$lib/helper/cookies";
   import { Login, LoginOIDC } from "$lib/adapter/rest/auth";
+  import { onMount } from "svelte";
+  import { page } from "$app/stores";
 
   let username: string;
   let password: string;
 
-  let error: string | null;
+  onMount(() => {
+    // Read error from URL parameter
+    const error = $page.url.searchParams.get('error');
+    if (error) {
+      $SnackBar.message = error;
+      $SnackBar.color = "red";
+    }
+  });
 
   async function getTokenFromCredentials() {
     try {
-      const token = await Login(username, password);
-      setCookie("auth", token, 7);
+      await Login(username, password);
       window.location.href = '/profile';
     } catch (err: any) {
       $SnackBar.message = err.message;
@@ -20,16 +27,8 @@
     } 
   }
 
-  async function getTokenFromOIDC() {
-    try {
-      const token = await LoginOIDC();
-      setCookie("auth", token, 7);
-      window.location.href = '/profile';
-    } catch (err: any) {
-      $SnackBar.message = err.message;
-      $SnackBar.color = "red";
-      resetForm();
-    } 
+  function getTokenFromOIDC() {
+    LoginOIDC();
   }
 
   function resetForm() {

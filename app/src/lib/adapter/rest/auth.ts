@@ -46,9 +46,9 @@ export const GetProfile = async (token: string | null): Promise<AdapterProfile |
  * If the request fails Error is thrown containing the API error message
  * @param username Username
  * @param password Password
- * @returns JWT tokens
+ * On success, the token is added to the cookie
  */
-export const Login = async (username: string, password: string): Promise<any> => {
+export const Login = async (username: string, password: string): Promise<void> => {
   const resp = await fetch(`${import.meta.env.VITE_DEV_API_URL?import.meta.env.VITE_DEV_API_URL:""}/api/auth/login`, {
     method: 'POST',
     headers: {
@@ -63,7 +63,7 @@ export const Login = async (username: string, password: string): Promise<any> =>
   const body = await resp.json();
 
   if (resp.ok) {
-    return body.token;
+    return;
   } else {
     throw new Error(body.error);
   }
@@ -72,21 +72,10 @@ export const Login = async (username: string, password: string): Promise<any> =>
 /**
  * This function will fetch a new token from the server by using OIDC provider
  * 
- * If the request fails Error is thrown containing the API error message
- * @returns JWT tokens
+ * On success, the token is added to the cookie and the user is redirected to /profile
  */
-export const LoginOIDC = async (): Promise<any> => {
-  const resp = await fetch(`${import.meta.env.VITE_DEV_API_URL?import.meta.env.VITE_DEV_API_URL:""}/api/auth/oidc/login`, {
-    method: 'GET'
-  });
-
-  const body = await resp.json();
-
-  if (resp.ok) {
-    return body.token;
-  } else {
-    throw new Error(body.error);
-  }
+export const LoginOIDC = (): void => {
+  window.location.href = `${import.meta.env.VITE_DEV_API_URL?import.meta.env.VITE_DEV_API_URL:""}/api/auth/oidc/login`;
 }
 
 /**
