@@ -9,11 +9,6 @@
 
 🚀 Built stateless and designed to scale horizontal in Kubernetes Workloads 🚀
 
-## Important
-
-Even though this application is not "insecure", you should always be aware that it contains some design decisions that are aimed at simplifying processes rather than making them very secure.
-
-Don't take this code as a example for applications working with highly sensitive data!
   
 ## Deployment
 
@@ -21,49 +16,10 @@ For deploying the application on a kubernetes-workload, there is a documentation
 
 If you consider deploying it in another environment, just make sure that you have a proxy server that routes traffic from "/api" to the backend-instances and from "/" to the frontend-instances, the software is split up into microservices and needs to be carefully deployed.
 
-## Known issues
 
----
+## API Documentation
 
-### Ranking/Queue/Games not updating in real time (not live)
-
-Possible causes:
-
-**Proxy Server & other Middleware**
-
-*Symptom:*
-
-Websocket fails to connect to the API-Server.
-
-*Cause:*
-
-Proxy or other middleware does not support Websockets or Websockets are not enabled.
-
-NGINX & Traefik Ingress ressources support websockets by default, this is not the case on all proxys/loadbalancers etc.
-
-*Solution:*
-
-Check if all of your middleware does support websockets. Especially check all application-layer middleware, e.g. a network-loadbalancer that operates on layer 4 does not impact websockets, while things like application-gateways or application-loadbalancer must have support for websockets to work. 
-
-When using Cloudflare proxy on free plan, you will also notice some performance losses, as they do not offer websockets on maximum performance.
-
-**Database**
-
-*Symptom:*
-
-Websocket connects and on every reload of the page you will get fresh and correct results, the results are just not rendered in real-time to the page.
-
-*Cause:*
-
-The XMemo-API opens a real-time watcher stream to the Mongodb database, for gameboards such a stream is opened whenever you connect to the websocket, for things like the leaderboard/queue there is a "collective" stream that is opened and made available for every websocket-connection.
-
-Most likely this is caused by either an old version of Mongodb that does not support watchers or because your database is not setup as replication-server (even single-node databases must be setup as replication to support watchers).
-
-*Solution:*
-
-Make sure your mongod version is above version *MongoDB 3.6*.
-
-Make sure your database is setup as replication, you can do this by connecting to the database and running *rs.initiate()*
+You can find extensive API documentation [here](/api/README.md).
 
 
 
@@ -132,549 +88,47 @@ To activate Partial Update Mode, set an environment variable on the API instance
 
 In a horizontally scaled environment, remember to configure the load balancer for sticky sessions.
 
-  
-## API Documentation
+
+## Known issues
 
 ---
 
+### Ranking/Queue/Games not updating in real time (not live)
 
+Possible causes:
 
-The API is mainly built for POST requests with REST endpoints, while the Websocket primarily sends data (half duplex).
+**Proxy Server & other Middleware**
 
-This is because the POST requests may contain complex data (authentication headers, query, etc.) that is easier to process using the fully standardized REST API.
+*Symptom:*
 
-### REST:
+Websocket fails to connect to the API-Server.
 
-The Response from the API will always contain a `message` object and if it fails a `error` object
+*Cause:*
 
-**/auth/register**
+Proxy or other middleware does not support Websockets or Websockets are not enabled.
 
----
+NGINX & Traefik Ingress ressources support websockets by default, this is not the case on all proxys/loadbalancers etc.
 
-Type: POST
+*Solution:*
 
-Params: -
+Check if all of your middleware does support websockets. Especially check all application-layer middleware, e.g. a network-loadbalancer that operates on layer 4 does not impact websockets, while things like application-gateways or application-loadbalancer must have support for websockets to work. 
 
-Headers:
+When using Cloudflare proxy on free plan, you will also notice some performance losses, as they do not offer websockets on maximum performance.
 
-| Content-Type | application/json |
-| --- | --- |
+**Database**
 
-Body Example (JSON):
+*Symptom:*
 
-```javascript
-{
-    "username": "Kater Karlo",
-    "email": "katerkarlo@gmail.com",
-    "password": "Oberknacker123"
-}
+Websocket connects and on every reload of the page you will get fresh and correct results, the results are just not rendered in real-time to the page.
 
-```
+*Cause:*
 
-Response Example (JSON):
+The XMemo-API opens a real-time watcher stream to the Mongodb database, for gameboards such a stream is opened whenever you connect to the websocket, for things like the leaderboard/queue there is a "collective" stream that is opened and made available for every websocket-connection.
 
-```javascript
-{
-    "message": "Registered successfully"
-}
+Most likely this is caused by either an old version of Mongodb that does not support watchers or because your database is not setup as replication-server (even single-node databases must be setup as replication to support watchers).
 
-```
+*Solution:*
 
-Function: Registers a user
+Make sure your mongod version is above version *MongoDB 3.6*.
 
-
-
-**/auth/login**
-
----
-
-Type: POST
-
-Params: -
-
-Headers:
-
-| Content-Type | application/json |
-| --- | --- |
-
-Body Example (JSON):
-
-```javascript
-{
-    "username": "Kater Karlo",
-    "password": "Oberknacker123"
-}
-
-```
-
-Response Example:
-
-- Cookie containing "Bearer <jwt>" is added
-
-Function: Retrieve jwt token
-
-
-
-**/auth/oidc/login**
-
----
-
-Type: GET
-
-Params: -
-
-Response Example:
-
-- Cookie containing "Bearer <jwt>" is added
-- Redirect to "/profile" route
-
-Error message (if any) is added to the redirect route with a query param "error" e.g. "/profile?error=Failed to login"
-
-Important: When using this route with the Browsers fetch API, it may fail due to CORS policies. In prod I recommend to just fully redirect the user to this route.
-
-This endpoint is different to the others, because oidc works with redirects to the OAuth provider, which is blocked by CORS when using the Browser fetch API.
-
-Function: Retrieve jwt token from OIDC provider
-
-
-
-**/auth/profile**
-
----
-
-Type: GET
-
-Params: -
-
-Headers:
-
-| Authorization | Bearer &lt;token&gt; |
-| --- | --- |
-
-Body Example (JSON): -
-
-Response Example (JSON):
-
-```javascript
-{
-    "username": "Kater Karlo",
-    "userid": "<userid>",
-    "email": "katerkarlo@gmail.com",
-    "description": "Kater sein Vater",
-    "title": "Beginner",
-    "ranking": "69",
-    "displayedgames": "5",
-    "role": "user"
-}
-
-```
-
-Function: Get user information
-
-
-
-**/auth/editprofile**
-
----
-
-Type: POST
-
-Params: -
-
-Headers:
-
-| Content-Type | application/json |
-| --- | --- |
-| Authorization | Bearer &lt;token&gt; |
-
-Body Example (JSON):
-
-```javascript
-{
-    "newusername": "Trudi",
-    "newdescription": "Freundin von Kater Karlo",
-    "newdisplayedgames": "10"
-}
-
-```
-
-Response Example (JSON):
-
-```javascript
-{
-    "message": "User updated successfully"
-}
-
-```
-
-Function: Edit user information
-
-
-
-**/auth/editpassword**
-
----
-
-Type: POST
-
-Params: -
-
-Headers:
-
-| Content-Type | application/json |
-| --- | --- |
-| Authorization | Bearer &lt;token&gt; |
-
-Body Example (JSON):
-
-```javascript
-{
-    "oldpassword": "Oberknacker123",
-    "newpassword": "Kochmeisterin123"
-}
-
-```
-
-Response Example (JSON):
-
-```javascript
-{
-    "message": "Password changed successfully"
-}
-
-```
-
-Function: Update user password
-
-
-
-**/play/queue**
-
----
-
-Type: POST
-
-Params: -
-
-Headers:
-
-| Authorization | Bearer &lt;token&gt; |
-| --- | --- |
-
-Body Example (JSON): -
-
-Response Example (JSON):
-
-```javascript
-{
-    "message": "Successfully added player to queue"
-}
-
-```
-
-Function: Add/Remove player to queue and create game if someone is already waiting
-
-
-
-**/play/queue**
-
----
-
-Type: GET
-
-Params: -
-
-Headers: -
-
-Body Example (JSON): -
-
-Response Example (JSON):
-
-```javascript
-{
-    "message": "Successfully loaded queue",
-    "queue": [
-        {
-            "user_id": "<userid>",
-            "username": "Trudi",
-            "ranking": "430",
-            "title": "Beginner",
-        }
-    ]
-}
-
-```
-
-Function: Get queue information, data is directly returned from mongo-document
-
-
-
-**/play/move**
-
----
-
-Type: POST
-
-Params:
-
-| gameid | &lt;gameid&gt; |
-| --- | --- |
-
-Headers:
-
-| Content-Type | application/json |
-| --- | --- |
-| Authorization | Bearer &lt;token&gt; |
-
-Body Example (JSON):
-
-```javascript
-{
-    "discover_id": "<cardid>"
-}
-
-```
-
-Response Example (JSON):
-
-```javascript
-{
-    "message": "Moved successfully"
-}
-
-```
-
-Function: Discover a card on the gameboard
-
-**/play/takemove**
-
----
-
-Type: POST
-
-Params:
-
-| gameid | &lt;gameid&gt; |
-| --- | --- |
-
-Headers:
-
-| Content-Type | application/json |
-| --- | --- |
-| Authorization | Bearer &lt;token&gt; |
-
-
-Response Example (JSON):
-
-```javascript
-{
-    "message": "Move was taken successfully"
-}
-
-```
-
-Function: Steal move from enemy, this only works if the move-time is up
-
-
-**/admin/config**
-
----
-
-Type: POST
-
-Headers:
-
-| Content-Type | application/json |
-| --- | --- |
-| Authorization | Bearer &lt;token&gt; |
-
-
-Response Example (JSON):
-
-```javascript
-{
-    "rankedcardpairs": "20",
-    "rankedmovetime": "20",
-    "titlemap": {
-        "500": "Contender",
-        "1000": "Chief",
-    }
-}
-
-```
-
-Function: Returns the platform configuration object
-Requires a user with "admin" or "maintainer" role.
-
-
-**/admin/editconfig**
-
----
-
-Type: POST
-
-Headers:
-
-| Content-Type | application/json |
-| --- | --- |
-| Authorization | Bearer &lt;token&gt; |
-
-Body Example (JSON):
-
-```javascript
-{
-    "newrankedcardpairs": "20",
-    "newrankedmovetime": "15",
-    "newtitlemap": {
-        "500": "Contender",
-        "1000": "Chief",
-    }
-}
-
-```
-
-Response Example (JSON):
-
-```javascript
-{
-    "message": "Successfully updated config"
-}
-
-```
-
-Function: Returns the platform configuration object
-Requires a user with "admin" or "maintainer" role.
-
-
-**/admin/user**
-
----
-
-Type: GET
-
-Param: username (?username=Kater Karlo)
-
-Headers:
-
-| Content-Type | application/json |
-| --- | --- |
-| Authorization | Bearer &lt;token&gt; |
-
-Response Example (JSON):
-
-```javascript
-{
-    "user": {
-        "userid": "<userid>",
-        "username": "Kater Karlo",
-        "email": "karlo@xmemo",
-        "ranking": "400",
-        "role": "maintainer",
-    }
-}
-
-```
-
-Function: Returns some of the users information
-Requires a user with "admin" role.
-
-
-**/admin/edituser**
-
----
-
-Type: POST
-
-Headers:
-
-| Content-Type | application/json |
-| --- | --- |
-| Authorization | Bearer &lt;token&gt; |
-
-Body Example (JSON):
-
-```javascript
-{
-    "userid": "<userid>",
-    "newrole": "maintainer",
-}
-
-```
-
-Response Example (JSON):
-
-```javascript
-{
-    "message": "Successfully updated user"
-}
-
-```
-
-Function: Returns some of the users information
-Requires a user with "admin" role.
-
-### Websocket:
-
-The Socket is organized in multiple sub-routes that can be subscribed to.
-
-##### Public Socket (/api/publicsock)
-
-Query: Nothing
-
-**subscribeGame**
-
----
-
-Parameter: &lt;Gameid&gt;
-
-Response Streams:
-
-| gameUpdate | Gameboard (JSON) |
-| --- | --- |
-| gameUpdateError | Error message (Text) |
-
-
-
-**subscribeQueue**
-
----
-
-Parameter: -
-
-Response Streams:
-
-| queueUpdate | Queue (Array&lt;GameQueueObject&gt;) |
-| --- | --- |
-| queueUpdateError | Error message (String) |
-
-
-
-**subscribeLeaderboard**
-
----
-
-Parameter: -
-
-Response Streams:
-
-| leaderboardUpdate | Leaderboard (Array&lt;UserObject&gt;) |
-| --- | --- |
-| leaderboardUpdateError | Error message (String) |
-
-
-##### Auth Socket (/api/authsock)
-
-Query: Bearer &lt;token&gt;
-
-
-**subscribeCurrentGames (-un)**
-
----
-
-Parameter: -
-
-Response Streams:
-
-| currentGamesUpdate | Current Games (Array&lt;UserObject&gt;) |
-| --- | --- |
-| currentGamesUpdateError | Error message (String) |
+Make sure your database is setup as replication, you can do this by connecting to the database and running *rs.initiate()*

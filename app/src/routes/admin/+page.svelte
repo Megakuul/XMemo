@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { fade } from "svelte/transition";
-	import { getCookie } from "$lib/helper/cookies";
 	import LoadIcon from "$lib/components/LoadIcon.svelte";
   import { SnackBar } from "$lib/components/snackbar.store";
 
@@ -17,7 +16,7 @@
 
   onMount(async () => {
     try {
-      Config = await GetConfig(getCookie("auth"));
+      Config = await GetConfig();
     } catch (err: any) {
       $SnackBar.message = err.message;
       $SnackBar.color = "red";
@@ -29,7 +28,7 @@
   async function updateconfig() {
     try {
       if (Config) {
-        const msg = await UpdateConfig(getCookie("auth"), Config);
+        const msg = await UpdateConfig(Config);
         $SnackBar.message = String(msg);
         $SnackBar.color = "green";
       }
@@ -58,7 +57,7 @@
 
   async function getuser() {
     try {
-      CurrentUser = await GetUser(getCookie("auth"), SearchUser);
+      CurrentUser = await GetUser(SearchUser);
     } catch (err: any) {
       $SnackBar.message = err.message;
       $SnackBar.color = "red"
@@ -68,7 +67,7 @@
   async function updateuser() {
     try {
       if (CurrentUser) {
-        const msg = await UpdateUser(getCookie("auth"), CurrentUser)
+        const msg = await UpdateUser(CurrentUser)
         $SnackBar.message = String(msg);
         $SnackBar.color = "green";
       }

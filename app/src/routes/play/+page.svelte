@@ -3,13 +3,14 @@
 
   import { getRankingColor } from "$lib/components/rankingcolor";
   import { SnackBar } from "$lib/components/snackbar.store";
-  import { getCookie } from "$lib/helper/cookies";
 
   import { onPubSock } from "$lib/adapter/socket/pubsock";
   import { onAuthSock } from "$lib/adapter/socket/authsock";
   import { JoinQueue } from "$lib/adapter/rest/play";
   import type { AdapterGame, AdapterGameQueue } from "$lib/adapter/types";
   import type { Socket } from "socket.io-client";
+  import { getCookie, setCookie } from "$lib/helper/cookies";
+  import { GetSocketToken } from "$lib/adapter/rest/auth";
   
   
   let currentGames: AdapterGame[] = [];
@@ -21,8 +22,21 @@
   let cleanPubSock: any;
   let cleanAuthSock: any;
 
-  onMount(() => {
-    jwt = getCookie("auth");
+  onMount(async () => {
+    // Check if socket token is in cookie
+    jwt = getCookie("sockauth");
+    if (!jwt) {
+      // If not, try to get a socket token from the api
+      try {
+        jwt = await GetSocketToken();
+        // If jwt is acquired from api, set it to cookie
+        if (jwt) setCookie("sockauth", jwt, 7);
+      } catch (err) {
+        // If token cannot be acquired, just skip it
+        jwt = null;
+      }
+    }
+    // If socket token is found, connect AuthSocket
     if (jwt) {
       cleanAuthSock = onAuthSock(jwt, (authSocket: Socket) => {
 
@@ -71,7 +85,7 @@
       return
     }
     try {
-      let queueMessage = await JoinQueue(jwt);
+      let queueMessage = await JoinQueue();
       $SnackBar.message = queueMessage;
       $SnackBar.color = "green";
     } catch (err: any) {

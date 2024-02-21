@@ -37,7 +37,7 @@ export const onPubSock = (callback: any) => {
   const pubSocket: Socket = io(import.meta.env.VITE_API_URL, {
     path: "/api/publicsock",
     transports: [ "websocket" ],
-    secure: import.meta.env.VITE_API_URL ? false : true
+    secure: import.meta.env.VITE_ENABLE_SOCKET_TLS
   });
   if (pubSocket.connected) {
     callback(pubSocket);

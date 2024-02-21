@@ -5,12 +5,13 @@ import dotenvSafe from "dotenv-safe";
 import bodyParser from "body-parser";
 import cors from "cors";
 import http from "http";
+import cookieParser from "cookie-parser";
 import { Server } from "socket.io";
 import passport from "passport";
 import { auth } from "express-openid-connect";
 import ExpressSession from "express-session";
-import { default as connectMongoDBSession } from "connect-mongodb-session";
-import { addJWTStrategie } from './auth/passport.js';
+import connectMongoDBSession from "connect-mongodb-session";
+import { addJWTStrategy } from './auth/passport.js';
 import { connectMongoose } from "./models/db.js";
 import { AuthRouter } from "./routes/auth.js";
 import { setupPublicSocket } from "./socket/PublicSocket.js";
@@ -61,7 +62,7 @@ try {
 
 // Initializing the JWT Strategie
 try {
-  await addJWTStrategie(passport, process.env.JWT_SECRET_KEY);
+  await addJWTStrategy(passport, process.env.REST_JWT_SECRET_KEY);
 } catch (err: any) {
   LogErr(`Error Injecting JWTStrategie: ${err.message}`)
   process.exit(1);
@@ -93,6 +94,7 @@ const authSocket = new Server(server, {
 });
 
 // Initialize stateless Express Middleware
+app.use(cookieParser());
 app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -142,7 +144,7 @@ app.use('/api/auth', AuthRouter);
 app.use('/api/play', PlayRouter);
 app.use('/api/admin', AdminRouter);
 setupPublicSocket(publicSocket);
-setupAuthSocket(authSocket, process.env.JWT_SECRET_KEY);
+setupAuthSocket(authSocket, process.env.SOCKET_JWT_SECRET_KEY);
 
 // Start the HTTP Server
 const PORT = process.env.PORT || 3000;

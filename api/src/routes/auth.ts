@@ -93,22 +93,17 @@ AuthRouter.post('/login', async (req, res) => {
       username: user.username,
     };
 
-    if (process.env.JWT_SECRET_KEY===undefined) {
-      LogWarn("Cannot find JWT on the server, contact an administrator", "/auth/login");
-      return res.status(500).json({
-        message: "Error logging in",
-        error: "Cannot find JWT on the server, contact an administrator"
-      });
-    }
+    // Get jwt experation
+    const expiration = Number(process.env.REST_JWT_EXPIRATION_DAYS!)
 
-    const expiration = Number(process.env.JWT_EXPIRATION_DAYS!)
-
-    // Sign token and return it to the user
-    const token = jwt.sign(payload, process.env.JWT_SECRET_KEY!, { expiresIn: expiration * (24 * 60 * 60) });
-    res.cookie("auth", `Bearer ${token}`, {
-      maxAge: expiration * (24 * 60 * 60)
+    // Sign token and return it to the user as cookie
+    const token = jwt.sign(payload, process.env.REST_JWT_SECRET_KEY!, { expiresIn: expiration * (24 * 60 * 60) });
+    res.cookie("auth", `${token}`, {
+      httpOnly: true,
+      maxAge: expiration * (24 * 60 * 60 * 1000)
     });
-    return res.status(200).json({ 
+    // Return successful status to user
+    return res.status(200).json({
       message: "Logged in successfully"
     });
   } catch (err) {
@@ -121,46 +116,52 @@ AuthRouter.post('/login', async (req, res) => {
 });
 
 AuthRouter.get('/oidc/login', checkOIDCAvailability, requiresAuth(), async (req, res) => {
-  const redirect = "/profile";
+  // Route to redirect user after
+  const redirect = process.env.OIDC_FRONTEND_REDIRECT_ROUTE ?? "/";
   try {
+    // Check if authentication succeeded
     if (!req.oidc.isAuthenticated()) {
       return res.redirect(`${redirect}?error=Failed to authenticate with OIDC provider`);
     }
 
+    // Check if required tokenClaim values are present
     if (!req.oidc.idTokenClaims?.sub ||
-       !req.oidc.idTokenClaims?.iss ||
-       !req.oidc.idTokenClaims?.email ||
-       !req.oidc.idTokenClaims?.nickname) {
-      return res.redirect(`${redirect}?error=Missing token claim information from OIDC provider`);
+       !req.oidc.idTokenClaims?.email) {
+      return res.redirect(`${redirect}?error=Expected tokenClaims 'sub' and 'email' are missing on providers ID Token!`);
     }
-    const external_id = req.oidc.idTokenClaims.sub + req.oidc.idTokenClaims.iss;
+
+    // External_id is set to the "sub" tokenClaim, which is essentially the unique ID on the provider
+    const external_id = req.oidc.idTokenClaims.sub;
     
+    // JWT payload object
     let payload = {};
+    // Error string
     let error = "";
 
     // Check if the user exists
     const user: IUser | null = await User.findOne({ external_id: external_id });
     if (user) {
-      // If user already exists, create jwt payload
+      // If user already exists, create jwt payload and update mail attribute
       if (req.oidc.idTokenClaims.email) {
-        // Update email address if one is in the tokenClaim
         user.email = req.oidc.idTokenClaims.email;
         try {
+          // In case the mail is already in use or there is another failure
+          // the mail is just kept on the old one, but the user is notified
           await user.save();
         } catch (err: any) {
           error = "Failed to update email address";
         }
       }
-      // Forming jwt payload
+      // Creating jwt payload
       payload = {
         id: user._id,
         username: user.username,
       }
     } else {
       // If user does not exist, create a new one
-      // Because the username on the provider is usually not unique and the xmemo one is, username is a random string
-      // Passwort cannot be used and is set to a random string aswell
-      // Mail address must be unique so it is set to the tokenClaim mail
+      // Because the nickname is usually not unique on the provider, while the xmemo username is unique, the username is set to a random string
+      // Passwort cannot be used and is set to a random string
+      // Mail address must be unique so it is set to the tokenClaim mail, if the mail already exists, registration fails and the user is notified
       const newuser: IUser | null = new User({
         username: crypto.randomBytes(32).toString('hex'),
         external: true,
@@ -168,7 +169,10 @@ AuthRouter.get('/oidc/login', checkOIDCAvailability, requiresAuth(), async (req,
         email: req.oidc.idTokenClaims.email,
         password: crypto.randomBytes(128).toString('hex'),
       });
+      
       try {
+        // In case the mail is already in use or there is another failure
+        // the user is not created and the user is notified immediatly
         await newuser.save();
       } catch (err: any) {
         error = err.message;
@@ -181,27 +185,65 @@ AuthRouter.get('/oidc/login', checkOIDCAvailability, requiresAuth(), async (req,
       }
     }
 
-    if (process.env.JWT_SECRET_KEY===undefined) {
-      LogWarn("Cannot find JWT on the server, contact an administrator", "/auth/login");
-      return res.status(500).json({
-        message: "Error logging in",
-        error: "Cannot find JWT on the server, contact an administrator"
-      });
-    }
+    // Get jwt experation
+    const expiration = Number(process.env.REST_JWT_EXPIRATION_DAYS!)
 
-    const expiration = Number(process.env.JWT_EXPIRATION_DAYS!)
-
-    // Sign token and return it to the user
-    const token = jwt.sign(payload, process.env.JWT_SECRET_KEY!, { expiresIn: expiration * (24 * 60 * 60) });
-    res.cookie("auth", `Bearer ${token}`, {
-      maxAge: expiration * (24 * 60 * 60)
+    // Sign token and return it to the user as cookie
+    const token = jwt.sign(payload, process.env.REST_JWT_SECRET_KEY!, { expiresIn: expiration * (24 * 60 * 60) });
+    res.cookie("auth", `${token}`, {
+      httpOnly: true,
+      maxAge: expiration * (24 * 60 * 60 * 1000)
     });
+    // Redirect user back to /profile
     return res.redirect(redirect);
   } catch (err) {
     LogWarn(String(err), "/auth/oidc/login");
     return res.redirect(`${redirect}?error=Internal error occured`);
   }
 });
+
+AuthRouter.get('/profile',
+  passport.authenticate('jwt', { session: false }),
+  async (req: any, res: Response) => {
+    res.status(200).json({
+      username: req.user.username,
+      userid: req.user._id,
+      email: req.user.email,
+      description: req.user.description,
+      title: req.user.title,
+      ranking: req.user.ranking,
+      displayedgames: req.user.displayedgames,
+      role: req.user.role
+    });
+  }
+);
+
+AuthRouter.get('/getsockettoken',
+  passport.authenticate('jwt', { session: false }),
+  async (req: any, res: Response) => {
+    try {
+      // Token is created without database access directly from the original jwt
+      const payload = {
+        id: req.user._id,
+        username: req.user.username,
+      }
+      // Get jwt experation
+      const expiration = Number(process.env.SOCKET_JWT_EXPIRATION_DAYS!);
+      // Sign token with the socket jwt secret
+      const token = jwt.sign(payload, process.env.SOCKET_JWT_SECRET_KEY!, { expiresIn: expiration * (24 * 60 * 60) });
+      // Send token to client
+      return res.status(200).json({
+        token: token,
+      });
+    } catch (err) {
+      LogWarn(String(err), "/auth/getsockettoken");
+      return res.status(500).json({
+        message: 'Error updating user', 
+        error: "Internal error occured" 
+      });
+    }
+  }
+);
 
 AuthRouter.post('/editprofile', 
   passport.authenticate('jwt', { session: false }), 
@@ -321,19 +363,13 @@ AuthRouter.post('/editpassword',
     }
   }
 );
-      
-AuthRouter.get('/profile',
-  passport.authenticate('jwt', { session: false }),
-  async (req: any, res: Response) => {
-    res.status(200).json({
-      username: req.user.username,
-      userid: req.user._id,
-      email: req.user.email,
-      description: req.user.description,
-      title: req.user.title,
-      ranking: req.user.ranking,
-      displayedgames: req.user.displayedgames,
-      role: req.user.role
-    });
-  }
-);
+
+AuthRouter.get('/logout', async (req, res) => {
+  res.clearCookie("auth", {
+    httpOnly: true
+  });
+
+  res.status(200).json({
+    message: "Logged out successfully"
+  });
+});

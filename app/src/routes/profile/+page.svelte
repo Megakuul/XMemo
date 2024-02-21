@@ -1,19 +1,27 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { page } from "$app/stores";
   import LoadIcon from "$lib/components/LoadIcon.svelte";
   import { SnackBar } from "$lib/components/snackbar.store";
   import { getRankingColor } from "$lib/components/rankingcolor";
-  import { deleteCookie, getCookie } from "$lib/helper/cookies";
   
-  import { ChangeUser, GetProfile } from "$lib/adapter/rest/auth";
+  import { ChangeUser, GetProfile, Logout } from "$lib/adapter/rest/auth";
   import type { AdapterProfile } from "$lib/adapter/types";
+  import { deleteCookie } from "$lib/helper/cookies";
 
   let Profile: AdapterProfile | null;
   let Loading: boolean = true;
 
   onMount(async () => {
+    // Read error from URL parameter
+    const error = $page.url.searchParams.get('error');
+    if (error) {
+      $SnackBar.message = error;
+      $SnackBar.color = "red";
+    }
+
     try {
-      Profile = await GetProfile(getCookie("auth"))
+      Profile = await GetProfile()
     } catch (err: any) {
       $SnackBar.message = err.message;
       $SnackBar.color = "red";
@@ -31,7 +39,6 @@
           return;
         }
         await ChangeUser(
-          getCookie("auth"),
           Profile!.username,
           Profile.description || "",
           Profile.displayedgames || 10
@@ -49,7 +56,11 @@
   }
 
   function logout() {
-    deleteCookie("auth");
+    // Logout on REST API
+    Logout();
+    // Remove Socket Token
+    deleteCookie("sockauth");
+    // Reload page
     location.reload();
   }
 </script>

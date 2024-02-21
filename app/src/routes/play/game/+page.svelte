@@ -21,8 +21,6 @@
 
   let countdown: number = 0;
 
-  let jwt: string | null;
-
   let profile: AdapterProfile | null;
 
   let cleanPubSock: any;
@@ -33,9 +31,7 @@
   let cards_buf: AdapterCard[] = [];
 
   onMount(async () => {
-    jwt = getCookie("auth");
-
-    profile = await GetProfile(jwt)
+    profile = await GetProfile()
 
     cleanPubSock = onPubSock((socket: Socket) => {
       socket.emit("subscribeGame", gameid);
@@ -89,7 +85,7 @@
         $SnackBar.color = "red";
         return;
       }
-      await Move(jwt, gameid, cardid);
+      await Move(gameid, cardid);
     } catch (err: any) {
       $SnackBar.message = err.message;
       $SnackBar.color = "red";
@@ -106,7 +102,7 @@
         $SnackBar.color = "red";
         return;
       }
-      await TakeMove(jwt, gameid);
+      await TakeMove(gameid);
     } catch (err: any) {
       $SnackBar.message = err.message;
       $SnackBar.color = "red";

@@ -1,20 +1,9 @@
 <script lang="ts">
   import { SnackBar } from "$lib/components/snackbar.store";
   import { Login, LoginOIDC } from "$lib/adapter/rest/auth";
-  import { onMount } from "svelte";
-  import { page } from "$app/stores";
 
   let username: string;
   let password: string;
-
-  onMount(() => {
-    // Read error from URL parameter
-    const error = $page.url.searchParams.get('error');
-    if (error) {
-      $SnackBar.message = error;
-      $SnackBar.color = "red";
-    }
-  });
 
   async function getTokenFromCredentials() {
     try {

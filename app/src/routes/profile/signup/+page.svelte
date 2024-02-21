@@ -6,8 +6,6 @@
   let email: string;
   let password: string;
 
-  let error: string | null;
-
   async function register() {
     try {
       const token = await Register(username, email, password);

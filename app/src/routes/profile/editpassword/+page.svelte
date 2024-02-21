@@ -1,6 +1,5 @@
 <script lang="ts">
   import { SnackBar } from "$lib/components/snackbar.store";
-  import { getCookie } from "$lib/helper/cookies";
   import { ChangePassword } from "$lib/adapter/rest/auth";
 
   let password: string;
@@ -16,7 +15,7 @@
       } else if (newpassword.length < 8) {
         throw new Error("New Password needs to contain more than 7 Characters");
       } else {
-        await ChangePassword(getCookie("auth"), password, newpassword);
+        await ChangePassword(password, newpassword);
 
         $SnackBar.message = "Successfully changed Password";
         $SnackBar.color = "green"

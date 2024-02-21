@@ -13,19 +13,21 @@ interface JwtPayload {
  * Pass the PassportStatic Object by reference
  * 
  * This will add the JwtStrategy with the specified secret key to the Passport Object
- * 
- * ```javascript
- * const passport: PassportStatic = require('passport');
- * 
- * require('./config/passport')(passport, process.env.JWT_SECRET_KEY);
- * ```
  */
-export const addJWTStrategie = async (passport: PassportStatic, secret: string | undefined): Promise<void> => {
+export const addJWTStrategy = async (passport: PassportStatic, secret: string | undefined): Promise<void> => {
   if (secret===undefined) {
     throw new Error("Failed to read JWTSecret");
   } else {
     const opts = {
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        // Allow token from Authorization Header (for external API calls)
+        // ExtractJwt.fromAuthHeaderAsBearerToken(),
+        // Allow token from httpOnly "auth" token (for end user browser API calls)
+        (request) => {
+          const token = request.signedCookies.auth;
+          return token;
+        }
+      ]),
       secretOrKey: secret,
     };
 
