@@ -11,17 +11,18 @@ export interface AdapterUser {
   userid: string;
   username: string;
   email: string;
-  ranking: string;
+  ranking: number;
   role: string;
 }
 
 export interface AdapterProfile {
   userid: string;
   username: string;
+  external: boolean;
   email: string;
   description: string;
   title: string;
-  ranking: string;
+  ranking: number;
   displayedgames: number;
   role: string;
 }

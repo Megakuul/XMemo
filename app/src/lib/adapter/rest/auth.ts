@@ -27,6 +27,7 @@ export const GetProfile = async (): Promise<AdapterProfile | null> => {
     return {
       userid: body.userid,
       username: body.username,
+      external: body.external,
       email: body.email,
       description: body.description,
       title: body.title,

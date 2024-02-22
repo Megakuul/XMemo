@@ -27,7 +27,18 @@ dotenv.config();
 
 // Check environment variables
 try {
-  dotenvSafe.config();
+  // Check if all variables are present
+  dotenvSafe.config({
+    allowEmptyValues: true,
+  });
+  // Set 'false' and 'no' to "" which is actually considered 'falsy'
+  for (const [k, v] of Object.entries(process.env)) {
+    if (v && 
+      (v.toLowerCase() === "false" ||
+       v.toLowerCase() === "no")) {
+      process.env[k] = "";
+    }
+  }
 } catch (err: any) {
   const missingVars = err.missing.join(", ");
   LogErr(`Error: Following Environment variables were missing: ${missingVars}`);

@@ -36,16 +36,16 @@
 <div class="main-form">
   <h1 style="font-size: 50px;">Sign In</h1>
 
-  <input bind:value={username} type="text" placeholder="Username">
+  <input class="input" bind:value={username} type="text" placeholder="Username">
 
-  <input bind:value={password} type="password" placeholder="Password">
+  <input class="input" bind:value={password} type="password" placeholder="Password">
 
-  <button on:click={getTokenFromOIDC}>
-    Login with OpenID Connect Provider
+  <button class="button" on:click={getTokenFromCredentials}>
+    Submit
   </button>
 
-  <button on:click={getTokenFromCredentials}>
-    Submit
+  <button class="link" on:click={getTokenFromOIDC}>
+    Login with OpenID Connect
   </button>
 </div>
 
@@ -66,7 +66,7 @@
     user-select: none;
   }
 
-  .main-form input{
+  .main-form .input{
     display: block;
     border: none;
     font: 'Raleway', sans-serif;
@@ -82,28 +82,46 @@
 
     transition: all ease .5s;
   }
-  .main-form input:focus {
+  .main-form .input:focus {
     outline: none;
     box-shadow: 0.2rem 0.8rem 1.6rem rgb(0, 0, 0, 0.5);
   }
-  .main-form button {
-    height: 50px;
+  .main-form .button {
+    height: 55px;
     font-size: 1.8rem;
     padding: 10px;
     margin: 15px;
     border-radius: 8px;
     border: none;
 
-    color: white;
+    color: rgb(255, 255, 255, 0.8);
     background-color: rgb(0, 0, 0, 0.3);
     cursor: pointer;
     overflow: hidden;
     
     transition: all ease .5s;
   }
-  .main-form button:hover {
+  .main-form .button:hover {
     background-color: rgb(0, 0, 0, 0.2);
     color:rgb(255, 255, 255, 0.6);
+  }
+
+  .main-form .link {
+    margin: 15px;
+    background-color: transparent;
+    color: rgb(255, 255, 255, 0.8);
+
+    cursor: pointer;
+    border: none;
+
+    font-weight: 700;
+    font-size: 1.2rem;
+    text-decoration: underline;
+    transition: all ease .5s;
+  }
+  .main-form .link:hover {
+    color: white;
+    word-spacing: 1px;
   }
 
   @media screen and (max-width: 700px) {
@@ -111,14 +129,18 @@
       width: 80%;
     }
 
-    .main-form input {
+    .main-form .input {
       font-size: 1.2rem;
       height: 30px;
     }
 
-    .main-form button {
+    .main-form .button {
       font-size: 1rem;
       height: 30px;
+    }
+
+    .main-form .link {
+      font-size: 0.6rem;
     }
   }
 </style>

@@ -208,6 +208,7 @@ AuthRouter.get('/profile',
     res.status(200).json({
       username: req.user.username,
       userid: req.user._id,
+      external: req.user.external,
       email: req.user.email,
       description: req.user.description,
       title: req.user.title,

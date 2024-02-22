@@ -28,6 +28,8 @@
     } finally {
       Loading = false;
     }
+
+    console.log(Profile?.external)
   });
 
   async function editprofile() {
@@ -101,7 +103,7 @@
         </a>
       </div>
       <div class="options">
-        <button on:click={() => window.location.href=`/profile/editpassword`}>
+        <button class:disabled={Profile.external} on:click={() => window.location.href=`/profile/editpassword`}>
           Change Password
         </button>
         <button on:click={editprofile}>
@@ -301,6 +303,12 @@
   .information .options button:hover {
     background-color: rgb(0, 0, 0, 0.2);
     color:rgb(255, 255, 255, 0.6);
+  }
+  .information .options button.disabled {
+    text-decoration: line-through;
+    pointer-events: none;
+    color: rgba(255,255,255,0.5);
+    background-color: rgb(169, 169, 169, 0.3);
   }
 
   @media screen and (max-width: 600px) {

@@ -129,11 +129,12 @@ Response Example (JSON):
 {
     "username": "Kater Karlo",
     "userid": "<userid>",
+    "external": false,
     "email": "katerkarlo@gmail.com",
     "description": "Kater sein Vater",
     "title": "Beginner",
-    "ranking": "69",
-    "displayedgames": "5",
+    "ranking": 69,
+    "displayedgames": 5,
     "role": "user"
 }
 
@@ -191,7 +192,7 @@ Body Example (JSON):
 {
     "newusername": "Trudi",
     "newdescription": "Freundin von Kater Karlo",
-    "newdisplayedgames": "10"
+    "newdisplayedgames": 10
 }
 
 ```
@@ -314,7 +315,7 @@ Response Example (JSON):
         {
             "user_id": "<userid>",
             "username": "Trudi",
-            "ranking": "430",
+            "ranking": 430,
             "title": "Beginner",
         }
     ]
@@ -410,8 +411,8 @@ Response Example (JSON):
 
 ```javascript
 {
-    "rankedcardpairs": "20",
-    "rankedmovetime": "20",
+    "rankedcardpairs": 20,
+    "rankedmovetime": 20,
     "titlemap": {
         "500": "Contender",
         "1000": "Chief",
@@ -440,8 +441,8 @@ Body Example (JSON):
 
 ```javascript
 {
-    "newrankedcardpairs": "20",
-    "newrankedmovetime": "15",
+    "newrankedcardpairs": 20,
+    "newrankedmovetime": 15,
     "newtitlemap": {
         "500": "Contender",
         "1000": "Chief",
@@ -485,7 +486,7 @@ Response Example (JSON):
         "userid": "<userid>",
         "username": "Kater Karlo",
         "email": "karlo@xmemo",
-        "ranking": "400",
+        "ranking": 400,
         "role": "maintainer",
     }
 }
