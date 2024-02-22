@@ -11,7 +11,8 @@ export const GetConfig = async (): Promise<AdapterConfig | null> => {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-    }
+    },
+    credentials: "include",
   });
 
   const body = await resp.json();
@@ -39,6 +40,7 @@ export const UpdateConfig = async (newconfig: AdapterConfig): Promise<any> => {
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: "include",
     body: JSON.stringify({
       newrankedcardpairs: newconfig.rankedcardpairs,
       newrankedmovetime: newconfig.rankedmovetime,
@@ -69,6 +71,7 @@ export const GetUser = async (username: string): Promise<AdapterUser | null> => 
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: "include"
   });
 
   const body = await resp.json();
@@ -101,6 +104,7 @@ export const UpdateUser = async (user: AdapterUser): Promise<any> => {
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: "include",
     body: JSON.stringify({
       userid: user.userid,
       newrole: user.role,

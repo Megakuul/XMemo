@@ -11,10 +11,9 @@
     "prod": "node dist/index.js"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Linus Ilian Moser",
+  "license": "MIT",
   "dependencies": {
-    "@types/dotenv-safe": "^8.1.2",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "connect-mongodb-session": "^2.2.0",
@@ -33,6 +32,7 @@
     "socket.io": "^4.6.1"
   },
   "devDependencies": {
+    "@types/dotenv-safe": "^8.1.2",
     "@types/bcryptjs": "^2.4.2",
     "@types/connect-mongodb-session": "^2.4.7",
     "@types/cookie-parser": "^1.4.6",

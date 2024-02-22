@@ -12,7 +12,8 @@ export const GetProfile = async (): Promise<AdapterProfile | null> => {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-    }
+    },
+    credentials: "include",
   });
 
   // Unauthorized is in this scenario expected and is skipped
@@ -52,6 +53,7 @@ export const Register = async (username: string, email: string, password: string
     headers: {
       'Content-Type': 'application/json'
     },
+    credentials: "include",
     body: JSON.stringify({
       username: username,
       password: password,
@@ -81,6 +83,7 @@ export const Login = async (username: string, password: string): Promise<void> =
     headers: {
       'Content-Type': 'application/json'
     },
+    credentials: "include",
     body: JSON.stringify({
       username: username,
       password: password
@@ -116,7 +119,8 @@ export const GetSocketToken = async (): Promise<any> => {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-    }
+    },
+    credentials: "include",
   });
 
   const body = await resp.json();
@@ -141,6 +145,7 @@ export const ChangeUser = async (newusername: string, newdescription: string, ne
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: "include",
     body: JSON.stringify({
       newusername: newusername,
       newdescription: newdescription,
@@ -169,6 +174,7 @@ export const ChangePassword = async (oldpassword: string, newpassword: string): 
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: "include",
     body: JSON.stringify({
       oldpassword: oldpassword,
       newpassword: newpassword
@@ -191,6 +197,7 @@ export const ChangePassword = async (oldpassword: string, newpassword: string): 
 export const Logout = async (): Promise<void> => {
   const resp = await fetch(`${import.meta.env.VITE_API_URL?import.meta.env.VITE_API_URL:""}/api/auth/logout`, {
     method: 'GET',
+    credentials: "include",
     headers: {
       'Content-Type': 'application/json',
     }

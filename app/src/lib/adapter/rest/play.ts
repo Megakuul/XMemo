@@ -9,7 +9,8 @@ export const JoinQueue = async (): Promise<any> => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-    }
+    },
+    credentials: "include",
   })
 
   const body = await resp.json();
@@ -29,7 +30,8 @@ export const JoinQueue = async (): Promise<any> => {
  */
 export const ListQueue = async (): Promise<any> => {
   const resp = await fetch(`${import.meta.env.VITE_API_URL?import.meta.env.VITE_API_URL:""}/api/play/queue`, {
-    method: 'GET'
+    method: 'GET',
+    credentials: "include",
   })
 
   const body = await resp.json();
@@ -55,6 +57,7 @@ export const Move = async (game_id: string, discover_id: string): Promise<void> 
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: "include",
     body: JSON.stringify({
       discover_id: discover_id
     })
@@ -82,7 +85,8 @@ export const TakeMove = async (game_id: string): Promise<void> => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-    }
+    },
+    credentials: "include",
   })
 
   if (resp.ok) {

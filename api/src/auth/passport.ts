@@ -21,10 +21,10 @@ export const addJWTStrategy = async (passport: PassportStatic, secret: string | 
     const opts = {
       jwtFromRequest: ExtractJwt.fromExtractors([
         // Allow token from Authorization Header (for external API calls)
-        // ExtractJwt.fromAuthHeaderAsBearerToken(),
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
         // Allow token from httpOnly "auth" token (for end user browser API calls)
         (request) => {
-          const token = request.signedCookies.auth;
+          const token = request.cookies.auth;
           return token;
         }
       ]),

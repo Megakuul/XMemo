@@ -68,15 +68,16 @@ try {
   process.exit(1);
 }
 
-// CORS options
-// TODO: Set the origin to a Env variable
-// If the API shouldn't be public available change the origin
-const corsOptions = {
-  origin: "*",
+
+// CORS options for REST Server + Websocket handshake server
+// If the ALLOWED_CORS_ORIGIN is not set, set options to undefined
+// this will enforce the default http server behavior, which is basically to only allow sameOrigin requests
+const corsOptions = process.env.ALLOWED_CORS_ORIGIN ? {
+  origin: process.env.ALLOWED_CORS_ORIGIN, // Access-Control-Allow-Origin Header
+  credentials: true, // Access-Control-Allow-Credentials Header
   methods: ["GET", "POST"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-};
+} : undefined;
 
 // Express RESTful API
 const app: Application = express();
@@ -94,8 +95,9 @@ const authSocket = new Server(server, {
 });
 
 // Initialize stateless Express Middleware
-app.use(cookieParser());
+
 app.use(cors(corsOptions));
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(passport.initialize());

@@ -163,7 +163,7 @@ AuthRouter.get('/oidc/login', checkOIDCAvailability, requiresAuth(), async (req,
       // Passwort cannot be used and is set to a random string
       // Mail address must be unique so it is set to the tokenClaim mail, if the mail already exists, registration fails and the user is notified
       const newuser: IUser | null = new User({
-        username: crypto.randomBytes(32).toString('hex'),
+        username: crypto.randomBytes(12).toString('hex'),
         external: true,
         external_id: external_id,
         email: req.oidc.idTokenClaims.email,
