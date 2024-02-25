@@ -103,10 +103,23 @@ and one for the Web and Websecure port (the base exposure ports from Traefik)
 You can do this by applying the traefik.yml Manifest
 
 ```bash
-kubectl apply -f ./traefik/service-account.yml
+kubectl apply -f ./traefik/traefik.yml
 ```
 
 To add additional configurations you can use the args section from the deployment, in the Manifest, for example, there is also an option to redirect http to https
+
+#### Deploy Environment Secret store
+
+Environmentvariables for the application are stored in secret stores.
+
+First change and set the appropriate values in the `./environment.yml` file.
+To understand the variables, check the `.env.example` file inside the application directories.
+
+Then deploy the secret stores by manifest
+
+```bash
+kubectl apply -f ./environment.yml
+```
 
 #### Deploy Core application
 

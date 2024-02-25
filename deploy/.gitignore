@@ -1,0 +1,2 @@
+# Ignore test dir, where I usually put the manifests when I tweak them
+test/**

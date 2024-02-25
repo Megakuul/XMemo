@@ -12,7 +12,7 @@
   
 ## Deployment
 
-For deploying the application on a kubernetes-workload, there is a documentation in the */deployment* folder.
+For deploying the application on a kubernetes-workload, there is a documentation in the */deploy* folder.
 
 If you consider deploying it in another environment, just make sure that you have a proxy server that routes traffic from "/api" to the backend-instances and from "/" to the frontend-instances, the software is split up into microservices and needs to be carefully deployed.
 
@@ -60,11 +60,21 @@ In production.
 
 **How to activate it:**
 
-To activate Frontend Debug Mode, set an environment variable on the APP (frontend) instance:
+To activate Frontend Debug Mode, set two environment variables on the APP (frontend) instance:
 
 `VITE_API_URL = http://<API_URL>`
+`VITE_DISABLE_SOCKET_TLS=true`
 
-Remember that this variable must be present before building the svelte-app and cannot be injected when already running. If you do not set this option, websockets will run on WSS (SSL) and the frontend-app will just send the API-Requests to the URL its self living on (usually you use a proxy that routes traffic to /api to the API-instances and traffic to / to the frontend-instances).
+Remember that those variables must be present before building the svelte-app and cannot be injected when already running. If you do not set the "VITE_DISABLE_SOCKET_TLS" option, websockets will run on WSS (SSL).
+The "VITE_API_URL" will make the frontend-app send API-Requests to the defined API_URL instead of using its own origin.
+
+
+To mitigate CORS issues you also have to set the following environment variable on the API (backend) instance:
+
+`ALLOWED_CORS_ORIGIN = "http://<APP_URL>"`
+
+This will set the HTTP "Access-Control-Allow-Origin" response header to the frontend origin.
+Without this, the preflight request from the browser will fail and requests to this server will be denied.
 
 ### Partial Update Mode
 
@@ -88,6 +98,41 @@ To activate Partial Update Mode, set an environment variable on the API instance
 
 In a horizontally scaled environment, remember to configure the load balancer for sticky sessions.
 
+
+
+### OpenID Connect Login
+
+**What is it:**
+
+OpenID Connect (OIDC) is an extended standard for OAuth 2.0.
+
+XMemo can integrate an OpenID Connect provider for user registration. While the actual authorization processes are still handled by the XMemo system, it allows users to register themselves with the integrated provider, thus not having to create a separate XMemo account.
+
+
+Under the hood, XMemo creates a user account that is linked to the OIDC provider via the subject identifier. The users `jwt` can then be received by authenticating with the OIDC provider instead of using the classical "username+password" authentication.
+
+**How to activate it:**
+
+You can enable the provider by setting the following environment variables on the API instance:
+```bash
+# Enables OpenID Connect authentication
+OIDC_ENABLED = true
+# Base URL where the provider can redirect the client to the xmemo API
+OIDC_BASEURL = http://localhost:3000
+# Base URL where the provider is reachable for the xmemo API
+OIDC_ISSUERBASEURL = https://youroidcprovider.com
+# OIDC Client ID -> You get this information from the provider
+OIDC_CLIENTID = "youroidcappid"
+# OIDC Secret -> You get this information from the provider
+OIDC_SECRET = "youroidcsecret"
+# Route where the xmemo API redirects the user after OIDC login
+# If your frontend runs on a different url, you can specify the full frontend path here (e.g. http://localhost:5173/profile)
+OIDC_FRONTEND_REDIRECT_ROUTE = "/profile" 
+```
+
+The following values `OIDC_ISSUERBASEURL`, `OIDC_CLIENTID`, `OIDC_SECRET` must be obtained from the OIDC provider.
+
+`OIDC_BASEURL` must be set to the base url where the application will be publicly available.
 
 ## Known issues
 

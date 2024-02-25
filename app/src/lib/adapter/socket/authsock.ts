@@ -52,7 +52,7 @@ export const onAuthSock = (token: string, callback: any) => {
     path: "/api/authsock",
     query: { token },
     transports: [ "websocket" ],
-    secure: import.meta.env.VITE_ENABLE_SOCKET_TLS
+    secure: !import.meta.env.VITE_DISABLE_SOCKET_TLS
   });
 
   if (authSocket.connected) {

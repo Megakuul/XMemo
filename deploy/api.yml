@@ -1,16 +1,16 @@
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: app-ingress-route
+  name: api-ingress-route
   namespace: xmemo-system
 spec:
   entryPoints:
     - websecure
   routes:
   - kind: Rule
-    match: Host(`xmemo.megakuul.ch`) && PathPrefix(`/`)
+    match: Host(`xmemo.megakuul.ch`) && PathPrefix(`/api`)
     services:
-    - name: app-svc
+    - name: api-svc
       port: 80
   tls:
     secretName: certificate-secret
@@ -18,42 +18,43 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: app-svc
+  name: api-svc
   namespace: xmemo-system
 spec:
   selector:
-    app: app-pod
+    app: api-pod
   ports:
     - name: web
       port: 80
-      targetPort: 3000
+      targetPort: 80
 ---
 # Create actual Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: app-deployment
+  name: api-deployment
   namespace: xmemo-system
 spec:
   selector:
     matchLabels:
-      app: app-pod
+      app: api-pod
   replicas: 3
   template:
     metadata:
       namespace: xmemo-system
       labels:
-        app: app-pod
+        app: api-pod
     spec:
       containers:
-      - name: app-pod
+      - name: api-pod
         resources:
           limits:
-            memory: "300M"
-            cpu: "200m"
-        image: megakuul/xmemo-app:latest
+            memory: "450Mi"
+            cpu: "500m"
+        image: megakuul/xmemo-api:latest
         ports:
         - name: web
-          containerPort: 3000
-# The API URL is defined directly in the docker-image, this is because the vite-environment variables need to be initialized during build process
-# The API URL points to https://xmemo.megakuul.ch/api
+          containerPort: 80
+        envFrom:
+        - secretRef:
+            name: api_secret

@@ -34,10 +34,11 @@ import { io, type Socket } from "socket.io-client";
  * @returns cleanup function
  */
 export const onPubSock = (callback: any) => {
+  console.log(Boolean(!import.meta.env.VITE_DISABLE_SOCKET_TLS))
   const pubSocket: Socket = io(import.meta.env.VITE_API_URL, {
     path: "/api/publicsock",
     transports: [ "websocket" ],
-    secure: import.meta.env.VITE_ENABLE_SOCKET_TLS
+    secure: !import.meta.env.VITE_DISABLE_SOCKET_TLS
   });
   if (pubSocket.connected) {
     callback(pubSocket);

@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: api_secret
+  namespace: xmemo-system
+stringData:
+  PORT: "80"
+  DB_AUTH_STRING: "mongodb+srv://xmemo-api:password@cluster-hostname/?retryWrites=true&w=majority"
+  REST_JWT_SECRET_KEY: "ultramegasecretjwtkeypleasemakethiskeynottoshort"
+  REST_JWT_EXPIRATION_DAYS: "7"
+  SOCKET_JWT_SECRET_KEY: "ultramegasecretjwtkeypleasemakethiskeynottoshort"
+  SOCKET_JWT_EXPIRATION_DAYS: "7"
+  PARTIAL_UPDATE_MODE: "true"
+
+  DEFAULT_ADMIN_USERNAME: admin
+  DEFAULT_ADMIN_PASSWORD: password
+  DEFAULT_ADMIN_EMAIL: admin@xmemo
+
+  EXPRESS_DB_SESSION_ENABLE: true
+  EXPRESS_DB_SESSION_SECRET: "ultramegasecretjwtkeypleasemakethiskeynottoshort"
+
+  OIDC_ENABLED: "true"
+  OIDC_BASEURL: "http://localhost:3000"
+  OIDC_ISSUERBASEURL: https://youroidcprovider.com
+  OIDC_CLIENTID: "youroidcappid"
+  OIDC_SECRET: "youroidcsecret"
+  OIDC_FRONTEND_REDIRECT_ROUTE: "/profile"
+
