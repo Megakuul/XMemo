@@ -11,6 +11,9 @@ COPY package-lock.json ./
 # Install dependencies
 RUN npm install --omit=dev
 
+# Compile typescript
+RUN npm run build
+
 # Copy the rest of the application code
 COPY . .
 

@@ -61,6 +61,10 @@ spec:
       port: 443
   selector:
     app: traefik
+# If you don't use metallb, but a external loadbalancer
+# you can simply change the type to NodePort
+# add a "nodePort: 3000" port
+# and remove the metallb annotation
 ---
 # Create the Traefik Dashboard Service
 # TODO: Remove this, it is just here to test the application
@@ -79,3 +83,7 @@ spec:
       targetPort: dashboard
   selector:
     app: traefik
+# If you don't use metallb, but a external loadbalancer
+# you can simply change the type to NodePort
+# add a "nodePort: 3000" port
+# and remove the metallb annotation

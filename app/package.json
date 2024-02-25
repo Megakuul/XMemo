@@ -1,6 +1,9 @@
 {
 	"name": "xmemo",
 	"version": "2.0.0",
+	"keywords": [],
+  "author": "Linus Ilian Moser",
+  "license": "MIT",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "svelte-kit sync && vite build",

@@ -57,4 +57,4 @@ spec:
           containerPort: 80
         envFrom:
         - secretRef:
-            name: api_secret
+            name: api-secret
