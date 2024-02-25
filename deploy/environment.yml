@@ -19,6 +19,8 @@ stringData:
   EXPRESS_DB_SESSION_ENABLE: "true"
   EXPRESS_DB_SESSION_SECRET: "ultramegasecretjwtkeypleasemakethiskeynottoshort"
 
+  ALLOWED_CORS_ORIGIN: "no"
+
   OIDC_ENABLED: "true"
   OIDC_BASEURL: "http://localhost:3000"
   OIDC_ISSUERBASEURL: "https://youroidcprovider.com"
