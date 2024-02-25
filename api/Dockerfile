@@ -9,13 +9,13 @@ COPY package.json ./
 COPY package-lock.json ./
 
 # Install dependencies
-RUN npm install --omit=dev
-
-# Compile typescript
-RUN npm run build
+RUN npm i
 
 # Copy the rest of the application code
 COPY . .
+
+# Compile typescript
+RUN npm run build
 
 # Expose the port that the application will listen on
 EXPOSE 80
