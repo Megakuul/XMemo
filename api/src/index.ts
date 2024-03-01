@@ -121,7 +121,8 @@ try {
     // Create mongodb store
     const store = new MongoDBStore({
       uri: process.env.DB_AUTH_STRING!,
-      collection: "express_sessions"
+      collection: "express_sessions",
+      expires: 1000 * 60 * 60 * 6 // Delete sessions after 6 hours,
     });
     // Create and initialize express session with the created session
     app.use(ExpressSession({
